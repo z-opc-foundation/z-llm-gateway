@@ -25,11 +25,11 @@
 
     <!--
         z-llm: LLM 网关 (中心化平台). 5 子模块.
-        - z-llm-api     公共 DTO (UnifiedRequest/Response, ApiKey, LlmCredential 等)
-        - z-llm-core    HTTP 网关 + OpenAI/Anthropic 双协议适配 + AK 保管 + 限流 + 计量 + Provider 注册
-        - z-llm-starter Spring Boot Starter (auto-configuration + properties binding)
-        - z-llm-admin   管理面 (provider / model / health / config)
-        - z-llm-config  DB-backed CRUD 配置面板 (z_llm_provider / z_llm_model / z_agent_tool_template)
+        - z-llm-gateway-api     公共 DTO (UnifiedRequest/Response, ApiKey, LlmCredential 等)
+        - z-llm-gateway-core    HTTP 网关 + OpenAI/Anthropic 双协议适配 + AK 保管 + 限流 + 计量 + Provider 注册
+        - z-llm-gateway-starter Spring Boot Starter (auto-configuration + properties binding)
+        - z-llm-gateway-admin   管理面 (provider / model / health / config)
+        - z-llm-gateway-config  DB-backed CRUD 配置面板 (z_llm_provider / z_llm_model / z_agent_tool_template)
         依赖 z-agent-kernel-llm + z-agent-kernel-message + z-agent-kernel-types, 不重复实现 provider 调用.
         暴露 OpenAI / Anthropic 标准协议, 持有各家 provider AK 并分发.
         发版模式: reversion (CI-friendly versions) + flatten-maven-plugin, 跟 z-boot 同源.
@@ -64,8 +64,8 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:https://github.com/z-opc-foundation/z-llm.git</connection>
-        <developerConnection>scm:ssh://git@github.com/z-opc-foundation/z-llm.git</developerConnection>
+        <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
+        <developerConnection>scm:ssh://git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
         <url>https://github.com/z-opc-foundation/z-llm</url>
         <tag>HEAD</tag>
     </scm>
@@ -345,10 +345,10 @@
                             <autoPublish>true</autoPublish>
                             <!-- 本插件不认 maven.deploy.skip，没排除的模块照样进 bundle
                                  （实测结论见 z-schedule/pom.xml 同位置注释）⇒ 不可发布的模块点名列出。
-                              · z-llm-admin：管理端可执行应用，只有主类 + 数据源配置，repackage 不带
+                              · z-llm-gateway-admin：管理端可执行应用，只有主类 + 数据源配置，repackage 不带
                                   classifier ⇒ 产物是执行 fat jar，不是别仓可引的库件。 -->
                             <excludeArtifacts>
-                                <excludeArtifact>z-llm-admin</excludeArtifact>
+                                <excludeArtifact>z-llm-gateway-admin</excludeArtifact>
                             </excludeArtifacts>
                             <waitUntil>uploaded</waitUntil>
                             <waitMaxTime>1800</waitMaxTime>

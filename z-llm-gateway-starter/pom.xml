@@ -32,7 +32,7 @@
          刻意**不补回**：本仓 74 支 java（main 50 + test 24）里 ch.qos.logback / org.apache.logging /
          java.util.logging 的引用是 0 处（15 支走 org.slf4j 门面），仓内没有任何 logback*.xml /
          log4j2*.xml / logging*.properties（现 grep 与 find 均 0 命中），唯一与日志有关的直接依赖是
-         z-llm-core 那支 slf4j-api（门面，迁移后仍在 1.7.36）；
+         z-llm-gateway-core 那支 slf4j-api（门面，迁移后仍在 1.7.36）；
          z-llm 是给宿主应用用的库，log impl 由宿主带，这是组织口径而不是本仓的损失。
          冒烟测试 ZLlmAutoConfigurationSmokeTest 只断言 bean 存在，不读日志：迁移前后
          本模块 test 数与全仓 test 数逐格相同（0 F / 0 E）。 -->
@@ -59,8 +59,8 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:https://github.com/z-opc-foundation/z-llm.git</connection>
-        <developerConnection>scm:ssh:git@github.com/z-opc-foundation/z-llm.git</developerConnection>
+        <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
+        <developerConnection>scm:ssh:git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
         <url>https://github.com/z-opc-foundation/z-llm</url>
         <tag>HEAD</tag>
     </scm>

@@ -44,9 +44,9 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git://github.com/z-opc-foundation/z-llm.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/z-opc-foundation/z-llm.git</developerConnection>
-        <url>https://github.com/z-opc-foundation/z-llm/tree/main/z-llm-config</url>
+        <connection>scm:git:git://github.com/z-opc-foundation/z-llm-gateway.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
+        <url>https://github.com/z-opc-foundation/z-llm-gateway/tree/main/z-llm-gateway-config</url>
     </scm>
 
     <dependencies>
