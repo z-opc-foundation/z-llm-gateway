@@ -1,6 +1,6 @@
 package com.zifang.z.hostapp.web;
 
-import com.zifang.z.llm.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

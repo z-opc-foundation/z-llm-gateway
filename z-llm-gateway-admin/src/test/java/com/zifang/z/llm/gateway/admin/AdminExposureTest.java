@@ -1,15 +1,15 @@
-package com.zifang.z.llm.admin;
+package com.zifang.z.llm.gateway.admin;
 
 import com.zifang.util.json.JsonUtil;
-import com.zifang.z.llm.admin.config.ZLlmAdminAutoConfiguration;
-import com.zifang.z.llm.admin.controller.AdminController;
-import com.zifang.z.llm.admin.service.AdminQueryService;
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.core.credential.ApiKeyService;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.service.RateLimiter;
+import com.zifang.z.llm.gateway.admin.config.ZLlmAdminAutoConfiguration;
+import com.zifang.z.llm.gateway.admin.controller.AdminController;
+import com.zifang.z.llm.gateway.admin.service.AdminQueryService;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.core.credential.ApiKeyService;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.service.RateLimiter;
 import org.junit.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 

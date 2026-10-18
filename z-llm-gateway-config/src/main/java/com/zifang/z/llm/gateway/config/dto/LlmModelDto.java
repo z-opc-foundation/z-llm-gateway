@@ -1,4 +1,4 @@
-package com.zifang.z.llm.config.dto;
+package com.zifang.z.llm.gateway.config.dto;
 
 public class LlmModelDto {
     private Long id;

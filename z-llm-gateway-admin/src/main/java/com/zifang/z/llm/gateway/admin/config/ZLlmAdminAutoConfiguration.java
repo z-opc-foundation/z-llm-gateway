@@ -1,4 +1,4 @@
-package com.zifang.z.llm.admin.config;
+package com.zifang.z.llm.gateway.admin.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.ComponentScan;
@@ -20,8 +20,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnProperty(name = "z.llm.expose-admin", havingValue = "true")
 @ComponentScan(basePackages = {
-        "com.zifang.z.llm.admin.controller",
-        "com.zifang.z.llm.admin.service"
+        "com.zifang.z.llm.gateway.admin.controller",
+        "com.zifang.z.llm.gateway.admin.service"
 })
 public class ZLlmAdminAutoConfiguration {
 }

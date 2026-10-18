@@ -1,4 +1,4 @@
-package com.zifang.z.llm.config.config;
+package com.zifang.z.llm.gateway.config.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +12,8 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 @Configuration
 @ComponentScan(
         basePackages = {
-                "com.zifang.z.llm.config.controller",
-                "com.zifang.z.llm.config.service"
+                "com.zifang.z.llm.gateway.config.controller",
+                "com.zifang.z.llm.gateway.config.service"
         },
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
 )

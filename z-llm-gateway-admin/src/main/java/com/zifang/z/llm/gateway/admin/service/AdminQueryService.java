@@ -1,10 +1,10 @@
-package com.zifang.z.llm.admin.service;
+package com.zifang.z.llm.gateway.admin.service;
 
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.core.credential.ApiKeyService;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.service.RateLimiter;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.core.credential.ApiKeyService;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.service.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

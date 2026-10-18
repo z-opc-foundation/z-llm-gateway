@@ -1,4 +1,4 @@
-package com.zifang.z.llm.admin.controller;
+package com.zifang.z.llm.gateway.admin.controller;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;

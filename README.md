@@ -350,8 +350,8 @@ kernel 没公开常量 —— 是已知重复，不是同一个源）。
 - **advice 限定 `basePackages` + `@Order(HIGHEST_PRECEDENCE)`**。Spring 解析异常时按 advice 顺序逐个问
   "你有没有这个异常的 handler"，**第一个命中的赢，不是全进程挑最具体的那个**。宿主常见的
   `@RestControllerAdvice(basePackages = "com.zifang")` + `Exception` 兑底只要排在前面，就会把网关的
-  429/400/502 压成 500 + 宿主自己的信封。限定包名让本类只管 `com.zifang.z.llm.core.controller` /
-  `com.zifang.z.llm.admin.controller` 两个包（不反向吃掉宿主语义），抬 order 让网关自己的 controller
+  429/400/502 压成 500 + 宿主自己的信封。限定包名让本类只管 `com.zifang.z.llm.gateway.core.controller` /
+  `com.zifang.z.llm.gateway.admin.controller` 两个包（不反向吃掉宿主语义），抬 order 让网关自己的 controller
   必定先命中本类。
 
 两条都由永久闸盯着：`MergedProcessAdvicePrecedenceTest`（真 `AnnotationConfigWebApplicationContext`，
@@ -504,7 +504,7 @@ repo1 上 `z-llm`/`z-llm-gateway-starter`/`z-llm-gateway-core` 的 `0.1.7` POM �
 - 未鉴权 + 坏 body 是 400 而不是 401：body 解析发生在 controller 方法体之前，鉴权在方法体里，
   顺序改不动（要挪得先加 filter/interceptor）
 - **网关路径上 mapping 阶段的 415/405/404 不归本库管**（结构性，不是漏改）：0.1.5 把 advice 收窄成只管
-  `com.zifang.z.llm.core.controller` / `com.zifang.z.llm.admin.controller` 两个包，而这几类异常由
+  `com.zifang.z.llm.gateway.core.controller` / `com.zifang.z.llm.gateway.admin.controller` 两个包，而这几类异常由
   `HandlerMapping` 抛出、那时 handler 还没定下来 ⇒ 带限定的 advice 一律不参与。0.1.6 把机制量成四腿对照
   （永久闸 `GatewayHttpProtocolTest.mappingPhaseErrorsEvadePackageScopedAdvice`）：裸 advice 接得到
   415/405（阳性腿），限定成本库包名接不到，限定成 `com.zifang` 也接不到。合并进程里能接住 405 的只有

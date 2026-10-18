@@ -1,7 +1,7 @@
-package com.zifang.z.llm.core.properties;
+package com.zifang.z.llm.gateway.core.properties;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 

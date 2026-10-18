@@ -1,4 +1,4 @@
-package com.zifang.z.llm.api.dto;
+package com.zifang.z.llm.gateway.api.dto;
 
 import java.util.Map;
 

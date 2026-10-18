@@ -1,4 +1,4 @@
-package com.zifang.z.llm.api.dto;
+package com.zifang.z.llm.gateway.api.dto;
 
 /**
  * Vendor 枚举 — 网关识别的 6 家 vend 后端.

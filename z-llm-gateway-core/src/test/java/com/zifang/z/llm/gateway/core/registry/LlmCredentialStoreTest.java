@@ -1,8 +1,8 @@
-package com.zifang.z.llm.core.registry;
+package com.zifang.z.llm.gateway.core.registry;
 
-import com.zifang.z.llm.api.dto.LlmCredential;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class LlmCredentialStoreTest {
         assertEquals("openai-primary", picked.getAlias());
     }
 
-    @Test(expected = com.zifang.z.llm.api.exception.GatewayException.class)
+    @Test(expected = com.zifang.z.llm.gateway.api.exception.GatewayException.class)
     public void pick_throws_for_empty_vendor() {
         LlmCredentialStore store = new LlmCredentialStore(sample());
         store.afterPropertiesSet();

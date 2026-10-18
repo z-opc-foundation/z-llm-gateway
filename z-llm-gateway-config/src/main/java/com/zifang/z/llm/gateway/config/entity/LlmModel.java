@@ -1,4 +1,4 @@
-package com.zifang.z.llm.config.entity;
+package com.zifang.z.llm.gateway.config.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

@@ -1,8 +1,8 @@
-package com.zifang.z.llm.core.support;
+package com.zifang.z.llm.gateway.core.support;
 
 import com.zifang.util.json.JsonCursor;
 import com.zifang.util.json.JsonUtil;
-import com.zifang.z.llm.core.upstream.UpstreamHttp;
+import com.zifang.z.llm.gateway.core.upstream.UpstreamHttp;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

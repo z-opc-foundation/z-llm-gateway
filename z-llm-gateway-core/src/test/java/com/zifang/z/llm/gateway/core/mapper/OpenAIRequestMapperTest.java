@@ -1,11 +1,11 @@
-package com.zifang.z.llm.core.mapper;
+package com.zifang.z.llm.gateway.core.mapper;
 
 import com.zifang.util.json.JsonCursor;
 import com.zifang.util.json.JsonUtil;
-import com.zifang.z.llm.api.dto.ContentPart;
-import com.zifang.z.llm.api.dto.ToolSpec;
-import com.zifang.z.llm.api.dto.UnifiedMessage;
-import com.zifang.z.llm.api.dto.UnifiedRequest;
+import com.zifang.z.llm.gateway.api.dto.ContentPart;
+import com.zifang.z.llm.gateway.api.dto.ToolSpec;
+import com.zifang.z.llm.gateway.api.dto.UnifiedMessage;
+import com.zifang.z.llm.gateway.api.dto.UnifiedRequest;
 import org.junit.Test;
 
 import java.util.List;

@@ -5,4 +5,4 @@
  *
  * @author yuku123
  */
-package com.zifang.z.llm.admin;
+package com.zifang.z.llm.gateway.admin;

@@ -1,9 +1,9 @@
-package com.zifang.z.llm.core.usage;
+package com.zifang.z.llm.gateway.core.usage;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.support.TestFixtures;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.support.TestFixtures;
 import org.junit.Test;
 
 import java.util.LinkedHashMap;

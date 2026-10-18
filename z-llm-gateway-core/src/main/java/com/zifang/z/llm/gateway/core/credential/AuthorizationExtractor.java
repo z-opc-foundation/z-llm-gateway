@@ -1,7 +1,7 @@
-package com.zifang.z.llm.core.credential;
+package com.zifang.z.llm.gateway.core.credential;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
 import org.springframework.http.HttpHeaders;
 
 import javax.servlet.http.HttpServletRequest;

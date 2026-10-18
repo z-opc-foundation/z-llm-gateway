@@ -1,6 +1,6 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
-import com.zifang.z.llm.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
 
 /**
  * 对外回显的 model id: 上游只给裸名时补回调用方使用的 vendor 命名空间.

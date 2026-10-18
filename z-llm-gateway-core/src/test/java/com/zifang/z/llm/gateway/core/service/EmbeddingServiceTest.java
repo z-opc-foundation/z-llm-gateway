@@ -1,19 +1,19 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
-import com.zifang.z.llm.api.dto.EmbeddingsRequest;
-import com.zifang.z.llm.api.dto.EmbeddingsResponse;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.auth.AccessControl;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.resilience.ProviderInvoker;
-import com.zifang.z.llm.core.router.ModelRouter;
-import com.zifang.z.llm.core.support.FakeLlmProvider;
-import com.zifang.z.llm.core.support.FakeUpstreamHttp;
-import com.zifang.z.llm.core.support.TestFixtures;
-import com.zifang.z.llm.core.usage.UsageLedger;
+import com.zifang.z.llm.gateway.api.dto.EmbeddingsRequest;
+import com.zifang.z.llm.gateway.api.dto.EmbeddingsResponse;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.auth.AccessControl;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.resilience.ProviderInvoker;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.support.FakeLlmProvider;
+import com.zifang.z.llm.gateway.core.support.FakeUpstreamHttp;
+import com.zifang.z.llm.gateway.core.support.TestFixtures;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -119,12 +119,12 @@ public class EmbeddingServiceTest {
         assertTrue(upstream.lastCall().url.endsWith("/v1/embeddings"));
     }
 
-    private EmbeddingService serviceFor(com.zifang.z.llm.api.dto.LlmCredential... creds) {
+    private EmbeddingService serviceFor(com.zifang.z.llm.gateway.api.dto.LlmCredential... creds) {
         GatewayProperties p = TestFixtures.properties(creds);
         p.getRetry().setBackoffMs(0L);
         LlmCredentialStore store = TestFixtures.store(p);
         LlmProviderRegistry registry = TestFixtures.registry(store);
-        for (com.zifang.z.llm.api.dto.LlmCredential c : creds) {
+        for (com.zifang.z.llm.gateway.api.dto.LlmCredential c : creds) {
             registry.replace(c.getVendor(), c.getAlias(), new FakeLlmProvider(c.getVendor().code(), "gpt-"));
         }
         return new EmbeddingService(p, store, new ModelRouter(registry, p),

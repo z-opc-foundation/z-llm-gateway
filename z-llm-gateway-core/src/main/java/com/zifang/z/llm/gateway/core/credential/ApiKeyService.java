@@ -1,8 +1,8 @@
-package com.zifang.z.llm.core.credential;
+package com.zifang.z.llm.gateway.core.credential;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;

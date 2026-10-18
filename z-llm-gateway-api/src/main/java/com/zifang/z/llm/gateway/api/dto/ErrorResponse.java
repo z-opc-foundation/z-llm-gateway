@@ -1,4 +1,4 @@
-package com.zifang.z.llm.api.dto;
+package com.zifang.z.llm.gateway.api.dto;
 
 /**
  * 错误响应 — 网关对外统一错误格式.

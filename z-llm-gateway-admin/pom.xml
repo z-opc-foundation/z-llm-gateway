@@ -15,7 +15,7 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <name>z-llm-admin (Control Plane)</name>
+    <name>z-llm-gateway-admin (Control Plane)</name>
     <description>管理面 — provider / model / api-key / 限流 / 计量 / 健康 等管理 REST 接口与最小化 UI 资源</description>
 
     <!-- 本模块原先自带 maven.compiler.source/target=8 与 project.build.sourceEncoding=UTF-8 三格，

@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.upstream;
+package com.zifang.z.llm.gateway.core.upstream;
 
 import com.zifang.z.agent.kernel.llm.support.LlmException;
 import com.zifang.z.agent.kernel.llm.support.LlmHttp;

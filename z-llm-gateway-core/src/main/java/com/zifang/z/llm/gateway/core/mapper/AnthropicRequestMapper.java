@@ -1,11 +1,11 @@
-package com.zifang.z.llm.core.mapper;
+package com.zifang.z.llm.gateway.core.mapper;
 
 import com.zifang.util.json.JsonCursor;
 import com.zifang.util.json.JsonUtil;
-import com.zifang.z.llm.api.dto.ContentPart;
-import com.zifang.z.llm.api.dto.ToolSpec;
-import com.zifang.z.llm.api.dto.UnifiedMessage;
-import com.zifang.z.llm.api.dto.UnifiedRequest;
+import com.zifang.z.llm.gateway.api.dto.ContentPart;
+import com.zifang.z.llm.gateway.api.dto.ToolSpec;
+import com.zifang.z.llm.gateway.api.dto.UnifiedMessage;
+import com.zifang.z.llm.gateway.api.dto.UnifiedRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +105,7 @@ public class AnthropicRequestMapper {
             um.setContent(content.isNull() ? null : content.asText());
         } else if (content.isArray()) {
             List<ContentPart> parts = new ArrayList<>();
-            List<com.zifang.z.llm.api.dto.ToolCall> tcs = new ArrayList<>();
+            List<com.zifang.z.llm.gateway.api.dto.ToolCall> tcs = new ArrayList<>();
             for (JsonCursor block : content.elements()) {
                 String type = textOrNull(block, "type");
                 if ("text".equals(type)) {
@@ -130,11 +130,11 @@ public class AnthropicRequestMapper {
                     p.setImageUrl(img);
                     parts.add(p);
                 } else if ("tool_use".equals(type)) {
-                    com.zifang.z.llm.api.dto.ToolCall tc = new com.zifang.z.llm.api.dto.ToolCall();
+                    com.zifang.z.llm.gateway.api.dto.ToolCall tc = new com.zifang.z.llm.gateway.api.dto.ToolCall();
                     tc.setId(textOrNull(block, "id"));
                     tc.setType("function");
-                    com.zifang.z.llm.api.dto.ToolCall.FunctionCall fn =
-                            new com.zifang.z.llm.api.dto.ToolCall.FunctionCall();
+                    com.zifang.z.llm.gateway.api.dto.ToolCall.FunctionCall fn =
+                            new com.zifang.z.llm.gateway.api.dto.ToolCall.FunctionCall();
                     fn.setName(textOrNull(block, "name"));
                     JsonCursor input = block.path("input");
                     fn.setArguments(input.isMissing() || input.isNull()

@@ -1,24 +1,24 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
 import com.zifang.z.agent.kernel.llm.ChatCompletionsRequest;
 import com.zifang.z.agent.kernel.llm.support.LlmException;
 import com.zifang.z.agent.kernel.types.TokenUsage;
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.ContentPart;
-import com.zifang.z.llm.api.dto.UnifiedMessage;
-import com.zifang.z.llm.api.dto.UnifiedRequest;
-import com.zifang.z.llm.api.dto.UnifiedStreamChunk;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.auth.AccessControl;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.resilience.ProviderInvoker;
-import com.zifang.z.llm.core.router.ModelRouter;
-import com.zifang.z.llm.core.support.FakeLlmProvider;
-import com.zifang.z.llm.core.support.TestFixtures;
-import com.zifang.z.llm.core.usage.UsageLedger;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.ContentPart;
+import com.zifang.z.llm.gateway.api.dto.UnifiedMessage;
+import com.zifang.z.llm.gateway.api.dto.UnifiedRequest;
+import com.zifang.z.llm.gateway.api.dto.UnifiedStreamChunk;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.auth.AccessControl;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.resilience.ProviderInvoker;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.support.FakeLlmProvider;
+import com.zifang.z.llm.gateway.core.support.TestFixtures;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -118,9 +118,9 @@ public class ChatGatewayServiceTest {
     @Test
     public void toolsReachTheProvider() {
         UnifiedRequest r = req("openai/gpt-4o", "hi");
-        com.zifang.z.llm.api.dto.ToolSpec ts = new com.zifang.z.llm.api.dto.ToolSpec();
+        com.zifang.z.llm.gateway.api.dto.ToolSpec ts = new com.zifang.z.llm.gateway.api.dto.ToolSpec();
         ts.setType("function");
-        com.zifang.z.llm.api.dto.ToolSpec.FunctionSpec fn = new com.zifang.z.llm.api.dto.ToolSpec.FunctionSpec();
+        com.zifang.z.llm.gateway.api.dto.ToolSpec.FunctionSpec fn = new com.zifang.z.llm.gateway.api.dto.ToolSpec.FunctionSpec();
         fn.setName("get_weather");
         fn.setParameters(Collections.singletonMap("type", "object"));
         ts.setFunction(fn);
@@ -167,7 +167,7 @@ public class ChatGatewayServiceTest {
     /** z-team / z-agent / z-lc 是直接注入本服务调用的, 这条无 ApiKey 的老签名不能断. */
     @Test
     public void inProcessSingleArgApiStillWorks() {
-        com.zifang.z.llm.api.dto.UnifiedResponse r = service.chat(req("openai/gpt-4o", "hi"));
+        com.zifang.z.llm.gateway.api.dto.UnifiedResponse r = service.chat(req("openai/gpt-4o", "hi"));
         assertEquals("hello", r.getChoices().get(0).getMessage().getContent());
         assertEquals("openai/gpt-4o", r.getModel());
     }

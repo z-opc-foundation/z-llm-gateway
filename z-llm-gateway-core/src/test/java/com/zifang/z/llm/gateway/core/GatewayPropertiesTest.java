@@ -1,9 +1,9 @@
-package com.zifang.z.llm.core;
+package com.zifang.z.llm.gateway.core;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.LlmCredential;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import org.junit.Test;
 
 import java.util.ArrayList;

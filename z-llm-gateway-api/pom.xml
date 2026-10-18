@@ -15,7 +15,7 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <name>z-llm-api (DTO)</name>
+    <name>z-llm-gateway-api (DTO)</name>
     <description>公共 DTO 与异常类型 (UnifiedRequest/Response, ChatMessage, Choice, UsageInfo, ApiKey, LlmCredential)</description>
 
     <!-- 本模块原先自带 maven.compiler.source/target=8 与 project.build.sourceEncoding=UTF-8 三格，

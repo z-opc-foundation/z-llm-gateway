@@ -1,11 +1,11 @@
-package com.zifang.z.llm.core.auth;
+package com.zifang.z.llm.gateway.core.auth;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.router.ModelRouter;
-import com.zifang.z.llm.core.support.TestFixtures;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.support.TestFixtures;
 import org.junit.Test;
 
 import java.util.Arrays;

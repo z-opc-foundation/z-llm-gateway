@@ -1,7 +1,7 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

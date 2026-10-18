@@ -1,25 +1,25 @@
-package com.zifang.z.llm.core.controller;
+package com.zifang.z.llm.gateway.core.controller;
 
 import com.zifang.util.json.JsonCursor;
 import com.zifang.z.agent.kernel.llm.support.LlmException;
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.auth.AccessControl;
-import com.zifang.z.llm.core.credential.ApiKeyService;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.resilience.ProviderInvoker;
-import com.zifang.z.llm.core.router.ModelRouter;
-import com.zifang.z.llm.core.service.ChatGatewayService;
-import com.zifang.z.llm.core.service.EmbeddingService;
-import com.zifang.z.llm.core.service.MultimodalChatRelay;
-import com.zifang.z.llm.core.service.RateLimiter;
-import com.zifang.z.llm.core.support.FakeLlmProvider;
-import com.zifang.z.llm.core.support.FakeUpstreamHttp;
-import com.zifang.z.llm.core.support.TestFixtures;
-import com.zifang.z.llm.core.usage.UsageLedger;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.auth.AccessControl;
+import com.zifang.z.llm.gateway.core.credential.ApiKeyService;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.resilience.ProviderInvoker;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.service.ChatGatewayService;
+import com.zifang.z.llm.gateway.core.service.EmbeddingService;
+import com.zifang.z.llm.gateway.core.service.MultimodalChatRelay;
+import com.zifang.z.llm.gateway.core.service.RateLimiter;
+import com.zifang.z.llm.gateway.core.support.FakeLlmProvider;
+import com.zifang.z.llm.gateway.core.support.FakeUpstreamHttp;
+import com.zifang.z.llm.gateway.core.support.TestFixtures;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -696,7 +696,7 @@ public class GatewayHttpProtocolTest {
      */
     private static final String[] INTERNAL_MARKERS = {
             "public void",
-            "com.zifang.z.llm.core.controller",
+            "com.zifang.z.llm.gateway.core.controller",
             "com.fasterxml.jackson",
             "StreamUtils",
             "javax.servlet",
@@ -818,7 +818,7 @@ public class GatewayHttpProtocolTest {
     static class BareMappingAdvice extends MappingPhaseHandlers {
     }
 
-    @ControllerAdvice(basePackages = "com.zifang.z.llm.core.controller")
+    @ControllerAdvice(basePackages = "com.zifang.z.llm.gateway.core.controller")
     static class SamePackageScopedMappingAdvice extends MappingPhaseHandlers {
     }
 

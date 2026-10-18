@@ -1,7 +1,7 @@
-package com.zifang.z.llm.core.params;
+package com.zifang.z.llm.gateway.core.params;
 
-import com.zifang.z.llm.api.dto.UnifiedRequest;
-import com.zifang.z.llm.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.dto.UnifiedRequest;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
 import org.junit.Test;
 
 import java.util.Arrays;

@@ -1,12 +1,12 @@
-package com.zifang.z.llm.admin.controller;
+package com.zifang.z.llm.gateway.admin.controller;
 
-import com.zifang.z.llm.admin.service.AdminQueryService;
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.core.credential.ApiKeyService;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.service.RateLimiter;
+import com.zifang.z.llm.gateway.admin.service.AdminQueryService;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.core.credential.ApiKeyService;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.service.RateLimiter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

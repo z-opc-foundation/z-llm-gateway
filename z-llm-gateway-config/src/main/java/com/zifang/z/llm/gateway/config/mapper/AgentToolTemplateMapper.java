@@ -1,7 +1,7 @@
-package com.zifang.z.llm.config.mapper;
+package com.zifang.z.llm.gateway.config.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.zifang.z.llm.config.entity.AgentToolTemplate;
+import com.zifang.z.llm.gateway.config.entity.AgentToolTemplate;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

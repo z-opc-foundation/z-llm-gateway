@@ -1,16 +1,16 @@
-package com.zifang.z.llm.config.service;
+package com.zifang.z.llm.gateway.config.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zifang.z.llm.config.dto.LlmModelDto;
-import com.zifang.z.llm.config.dto.LlmProviderDto;
-import com.zifang.z.llm.config.dto.ToolTemplateDto;
-import com.zifang.z.llm.config.entity.AgentToolTemplate;
-import com.zifang.z.llm.config.entity.LlmModel;
-import com.zifang.z.llm.config.entity.LlmProvider;
-import com.zifang.z.llm.config.mapper.AgentToolTemplateMapper;
-import com.zifang.z.llm.config.mapper.LlmModelMapper;
-import com.zifang.z.llm.config.mapper.LlmProviderMapper;
+import com.zifang.z.llm.gateway.config.dto.LlmModelDto;
+import com.zifang.z.llm.gateway.config.dto.LlmProviderDto;
+import com.zifang.z.llm.gateway.config.dto.ToolTemplateDto;
+import com.zifang.z.llm.gateway.config.entity.AgentToolTemplate;
+import com.zifang.z.llm.gateway.config.entity.LlmModel;
+import com.zifang.z.llm.gateway.config.entity.LlmProvider;
+import com.zifang.z.llm.gateway.config.mapper.AgentToolTemplateMapper;
+import com.zifang.z.llm.gateway.config.mapper.LlmModelMapper;
+import com.zifang.z.llm.gateway.config.mapper.LlmProviderMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,11 +1,11 @@
-package com.zifang.z.llm.starter.smoke;
+package com.zifang.z.llm.gateway.starter.smoke;
 
-import com.zifang.z.llm.core.controller.AnthropicController;
-import com.zifang.z.llm.core.controller.OpenAIController;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.service.ChatGatewayService;
-import com.zifang.z.llm.starter.autoconfig.ZLlmAutoConfiguration;
+import com.zifang.z.llm.gateway.core.controller.AnthropicController;
+import com.zifang.z.llm.gateway.core.controller.OpenAIController;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.service.ChatGatewayService;
+import com.zifang.z.llm.gateway.starter.autoconfig.ZLlmAutoConfiguration;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -62,7 +62,7 @@ public class ZLlmAutoConfigurationSmokeTest {
         ).run(ctx -> {
             LlmCredentialStore store = ctx.getBean(LlmCredentialStore.class);
             assertThat(store.size()).isEqualTo(1);
-            assertThat(store.pick(com.zifang.z.llm.api.dto.Vendor.OPENAI).getApiKey())
+            assertThat(store.pick(com.zifang.z.llm.gateway.api.dto.Vendor.OPENAI).getApiKey())
                     .isEqualTo("sk-test");
         });
     }

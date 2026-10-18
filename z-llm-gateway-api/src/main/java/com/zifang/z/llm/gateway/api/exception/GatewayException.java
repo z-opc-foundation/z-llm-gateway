@@ -1,4 +1,4 @@
-package com.zifang.z.llm.api.exception;
+package com.zifang.z.llm.gateway.api.exception;
 
 /**
  * 网关异常 — 网关层抛出的运行时异常基类.

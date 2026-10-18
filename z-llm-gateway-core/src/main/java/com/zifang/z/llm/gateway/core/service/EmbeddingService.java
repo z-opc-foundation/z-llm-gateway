@@ -1,21 +1,21 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
 import com.zifang.util.json.JsonCursor;
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.EmbeddingsRequest;
-import com.zifang.z.llm.api.dto.EmbeddingsResponse;
-import com.zifang.z.llm.api.dto.LlmCredential;
-import com.zifang.z.llm.api.dto.UsageInfo;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.auth.AccessControl;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.resilience.ProviderInvoker;
-import com.zifang.z.llm.core.router.ModelRouter;
-import com.zifang.z.llm.core.upstream.UpstreamEndpoints;
-import com.zifang.z.llm.core.upstream.UpstreamHttp;
-import com.zifang.z.llm.core.usage.UsageLedger;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.EmbeddingsRequest;
+import com.zifang.z.llm.gateway.api.dto.EmbeddingsResponse;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.UsageInfo;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.auth.AccessControl;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.resilience.ProviderInvoker;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.upstream.UpstreamEndpoints;
+import com.zifang.z.llm.gateway.core.upstream.UpstreamHttp;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

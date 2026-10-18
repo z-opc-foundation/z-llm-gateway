@@ -1,12 +1,12 @@
-package com.zifang.z.llm.core.resilience;
+package com.zifang.z.llm.gateway.core.resilience;
 
 import com.zifang.z.agent.kernel.llm.LlmProvider;
-import com.zifang.z.llm.api.dto.LlmCredential;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.properties.GatewayProperties;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

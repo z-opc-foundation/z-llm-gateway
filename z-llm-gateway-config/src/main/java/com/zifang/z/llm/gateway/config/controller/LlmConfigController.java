@@ -1,11 +1,11 @@
-package com.zifang.z.llm.config.controller;
+package com.zifang.z.llm.gateway.config.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zifang.util.core.meta.Result;
-import com.zifang.z.llm.config.dto.LlmModelDto;
-import com.zifang.z.llm.config.dto.LlmProviderDto;
-import com.zifang.z.llm.config.dto.ToolTemplateDto;
-import com.zifang.z.llm.config.service.LlmConfigService;
+import com.zifang.z.llm.gateway.config.dto.LlmModelDto;
+import com.zifang.z.llm.gateway.config.dto.LlmProviderDto;
+import com.zifang.z.llm.gateway.config.dto.ToolTemplateDto;
+import com.zifang.z.llm.gateway.config.service.LlmConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;

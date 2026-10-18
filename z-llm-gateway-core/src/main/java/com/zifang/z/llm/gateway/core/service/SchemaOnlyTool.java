@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
 import com.zifang.z.agent.kernel.tool.Tool;
 import com.zifang.z.agent.kernel.tool.ToolResult;

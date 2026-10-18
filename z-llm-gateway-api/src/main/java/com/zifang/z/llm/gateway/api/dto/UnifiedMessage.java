@@ -1,4 +1,4 @@
-package com.zifang.z.llm.api.dto;
+package com.zifang.z.llm.gateway.api.dto;
 
 import com.zifang.util.json.annotation.JsonDeserialize;
 import com.zifang.util.json.annotation.JsonSerialize;

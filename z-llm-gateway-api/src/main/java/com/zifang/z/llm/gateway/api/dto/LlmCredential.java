@@ -1,4 +1,4 @@
-package com.zifang.z.llm.api.dto;
+package com.zifang.z.llm.gateway.api.dto;
 
 /**
  * 一条 LLM 凭据 — vendor 的 AK + 路由信息.

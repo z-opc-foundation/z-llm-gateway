@@ -1,7 +1,7 @@
-package com.zifang.z.llm.core.credential;
+package com.zifang.z.llm.gateway.core.credential;
 
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.core.properties.GatewayProperties;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class ApiKeyServiceTest {
         // id 会出现在限流日志和 admin 输出里, 所以不能带出 key 明文
         assertFalse(loaded.getId().contains("sk-no-id"));
         // 原 NPE 现场: 限流这条链现在必须能跑通
-        assertTrue(new com.zifang.z.llm.core.service.RateLimiter(p).tryAcquire(loaded));
+        assertTrue(new com.zifang.z.llm.gateway.core.service.RateLimiter(p).tryAcquire(loaded));
     }
 
     /** 显式配了 id 的不能被摘要顶掉 —— admin 按 id 查限流明细靠的是它。 */

@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.controller;
+package com.zifang.z.llm.gateway.core.controller;
 
 import com.zifang.z.hostapp.web.HostLikeWebSurface;
 import org.junit.After;
@@ -95,7 +95,7 @@ public class MergedProcessAdvicePrecedenceTest {
 
         @GetMapping("/rate-limited")
         public String rateLimited() {
-            throw com.zifang.z.llm.api.exception.GatewayException
+            throw com.zifang.z.llm.gateway.api.exception.GatewayException
                     .rateLimited("gateway controller hits rate limit");
         }
     }

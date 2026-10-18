@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.upstream;
+package com.zifang.z.llm.gateway.core.upstream;
 
 import com.zifang.z.agent.kernel.llm.provider.AnthropicProvider;
 import com.zifang.z.agent.kernel.llm.provider.DashScopeProvider;
@@ -6,9 +6,9 @@ import com.zifang.z.agent.kernel.llm.provider.DeepSeekProvider;
 import com.zifang.z.agent.kernel.llm.provider.GeminiProvider;
 import com.zifang.z.agent.kernel.llm.provider.OpenAIProvider;
 import com.zifang.z.agent.kernel.llm.provider.QwenProvider;
-import com.zifang.z.llm.api.dto.LlmCredential;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.zifang.z.llm.starter.autoconfig;
+package com.zifang.z.llm.gateway.starter.autoconfig;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = {
-        "com.zifang.z.llm.core.controller",
-        "com.zifang.z.llm.core.service",
-        "com.zifang.z.llm.core.registry",
-        "com.zifang.z.llm.core.credential"
+        "com.zifang.z.llm.gateway.core.controller",
+        "com.zifang.z.llm.gateway.core.service",
+        "com.zifang.z.llm.gateway.core.registry",
+        "com.zifang.z.llm.gateway.core.credential"
 })
 public class ZLlmCoreScanConfig {
 }

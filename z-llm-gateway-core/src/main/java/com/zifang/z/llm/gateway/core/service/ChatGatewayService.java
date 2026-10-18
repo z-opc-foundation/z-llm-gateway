@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.service;
+package com.zifang.z.llm.gateway.core.service;
 
 import com.zifang.z.agent.kernel.llm.ChatCompletionsRequest;
 import com.zifang.z.agent.kernel.llm.ChatCompletionsResponse;
@@ -9,24 +9,24 @@ import com.zifang.z.agent.kernel.message.ToolCall;
 import com.zifang.z.agent.kernel.tool.Tool;
 import com.zifang.z.agent.kernel.types.MessageRole;
 import com.zifang.z.agent.kernel.types.TokenUsage;
-import com.zifang.z.llm.api.dto.ApiKey;
-import com.zifang.z.llm.api.dto.Choice;
-import com.zifang.z.llm.api.dto.ContentPart;
-import com.zifang.z.llm.api.dto.UnifiedMessage;
-import com.zifang.z.llm.api.dto.UnifiedRequest;
-import com.zifang.z.llm.api.dto.UnifiedResponse;
-import com.zifang.z.llm.api.dto.UnifiedStreamChunk;
-import com.zifang.z.llm.api.dto.UsageInfo;
-import com.zifang.z.llm.api.dto.Vendor;
-import com.zifang.z.llm.api.exception.GatewayException;
-import com.zifang.z.llm.core.auth.AccessControl;
-import com.zifang.z.llm.core.params.ParamTranslator;
-import com.zifang.z.llm.core.registry.LlmCredentialStore;
-import com.zifang.z.llm.core.registry.LlmProviderRegistry;
-import com.zifang.z.llm.core.resilience.ProviderInvoker;
-import com.zifang.z.llm.core.router.ModelRouter;
-import com.zifang.z.llm.core.upstream.UpstreamEndpoints;
-import com.zifang.z.llm.core.usage.UsageLedger;
+import com.zifang.z.llm.gateway.api.dto.ApiKey;
+import com.zifang.z.llm.gateway.api.dto.Choice;
+import com.zifang.z.llm.gateway.api.dto.ContentPart;
+import com.zifang.z.llm.gateway.api.dto.UnifiedMessage;
+import com.zifang.z.llm.gateway.api.dto.UnifiedRequest;
+import com.zifang.z.llm.gateway.api.dto.UnifiedResponse;
+import com.zifang.z.llm.gateway.api.dto.UnifiedStreamChunk;
+import com.zifang.z.llm.gateway.api.dto.UsageInfo;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.core.auth.AccessControl;
+import com.zifang.z.llm.gateway.core.params.ParamTranslator;
+import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
+import com.zifang.z.llm.gateway.core.resilience.ProviderInvoker;
+import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.upstream.UpstreamEndpoints;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class ChatGatewayService {
     private final UsageLedger usageLedger;
     private final RateLimiter rateLimiter;
     private final AccessControl accessControl;
-    private final com.zifang.z.llm.core.properties.GatewayProperties properties;
+    private final com.zifang.z.llm.gateway.core.properties.GatewayProperties properties;
 
     /** 可选协作者: 带图片的请求改由它直连上游 (kernel provider 传不了多模态). */
     private MultimodalChatRelay relay;
@@ -79,7 +79,7 @@ public class ChatGatewayService {
                               UsageLedger usageLedger,
                               RateLimiter rateLimiter,
                               AccessControl accessControl,
-                              com.zifang.z.llm.core.properties.GatewayProperties properties) {
+                              com.zifang.z.llm.gateway.core.properties.GatewayProperties properties) {
         this.providerRegistry = providerRegistry;
         this.credentialStore = credentialStore;
         this.router = router;
@@ -411,7 +411,7 @@ public class ChatGatewayService {
         List<Tool> tools = null;
         if (req.getTools() != null && !req.getTools().isEmpty()) {
             tools = new ArrayList<>();
-            for (com.zifang.z.llm.api.dto.ToolSpec ts : req.getTools()) {
+            for (com.zifang.z.llm.gateway.api.dto.ToolSpec ts : req.getTools()) {
                 if (ts == null || ts.getFunction() == null) continue;
                 tools.add(new SchemaOnlyTool(
                         ts.getFunction().getName(),
@@ -444,7 +444,7 @@ public class ChatGatewayService {
         List<ToolCall> tcs = Collections.emptyList();
         if (m.getToolCalls() != null && !m.getToolCalls().isEmpty()) {
             tcs = new ArrayList<>();
-            for (com.zifang.z.llm.api.dto.ToolCall utc : m.getToolCalls()) {
+            for (com.zifang.z.llm.gateway.api.dto.ToolCall utc : m.getToolCalls()) {
                 String args = utc.getFunction() == null ? "{}" :
                         (utc.getFunction().getArguments() == null ? "{}" : utc.getFunction().getArguments());
                 tcs.add(new ToolCall(utc.getId(),
@@ -555,7 +555,7 @@ public class ChatGatewayService {
                     d.setContent(kc.getContent());
                 }
                 if (kc.getToolCalls() != null && !kc.getToolCalls().isEmpty()) {
-                    List<com.zifang.z.llm.api.dto.ToolCall> tcs = new ArrayList<>();
+                    List<com.zifang.z.llm.gateway.api.dto.ToolCall> tcs = new ArrayList<>();
                     for (ToolCall tc : kc.getToolCalls()) {
                         tcs.add(toApiToolCall(tc));
                     }
@@ -584,7 +584,7 @@ public class ChatGatewayService {
         um.setRole("assistant");
         um.setContent(c.getContent());
         if (c.getToolCalls() != null && !c.getToolCalls().isEmpty()) {
-            List<com.zifang.z.llm.api.dto.ToolCall> tcs = new ArrayList<>();
+            List<com.zifang.z.llm.gateway.api.dto.ToolCall> tcs = new ArrayList<>();
             for (ToolCall tc : c.getToolCalls()) {
                 tcs.add(toApiToolCall(tc));
             }
@@ -594,11 +594,11 @@ public class ChatGatewayService {
         return ch;
     }
 
-    private com.zifang.z.llm.api.dto.ToolCall toApiToolCall(ToolCall tc) {
-        com.zifang.z.llm.api.dto.ToolCall utc = new com.zifang.z.llm.api.dto.ToolCall();
+    private com.zifang.z.llm.gateway.api.dto.ToolCall toApiToolCall(ToolCall tc) {
+        com.zifang.z.llm.gateway.api.dto.ToolCall utc = new com.zifang.z.llm.gateway.api.dto.ToolCall();
         utc.setId(tc.getId());
         utc.setType("function");
-        com.zifang.z.llm.api.dto.ToolCall.FunctionCall fn = new com.zifang.z.llm.api.dto.ToolCall.FunctionCall();
+        com.zifang.z.llm.gateway.api.dto.ToolCall.FunctionCall fn = new com.zifang.z.llm.gateway.api.dto.ToolCall.FunctionCall();
         fn.setName(tc.getName());
         fn.setArguments(tc.getArgumentsJson());
         utc.setFunction(fn);

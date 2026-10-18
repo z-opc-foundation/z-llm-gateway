@@ -1,8 +1,8 @@
-package com.zifang.z.llm.core.controller;
+package com.zifang.z.llm.gateway.core.controller;
 
 import com.zifang.z.agent.kernel.llm.support.LlmException;
-import com.zifang.z.llm.api.dto.ErrorResponse;
-import com.zifang.z.llm.api.exception.GatewayException;
+import com.zifang.z.llm.gateway.api.dto.ErrorResponse;
+import com.zifang.z.llm.gateway.api.exception.GatewayException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -31,8 +31,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  */
 @Component("zLlmGlobalExceptionHandler")
 @ControllerAdvice(basePackages = {
-        "com.zifang.z.llm.core.controller",   // OpenAIController / AnthropicController（/v1/*）
-        "com.zifang.z.llm.admin.controller"   // AdminController（控制面同样吃本类的 ErrorResponse）
+        "com.zifang.z.llm.gateway.core.controller",   // OpenAIController / AnthropicController（/v1/*）
+        "com.zifang.z.llm.gateway.admin.controller"   // AdminController（控制面同样吃本类的 ErrorResponse）
 })
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {

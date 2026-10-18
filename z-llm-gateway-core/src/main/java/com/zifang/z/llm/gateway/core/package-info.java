@@ -6,4 +6,4 @@
  *
  * @author yuku123
  */
-package com.zifang.z.llm.core;
+package com.zifang.z.llm.gateway.core;

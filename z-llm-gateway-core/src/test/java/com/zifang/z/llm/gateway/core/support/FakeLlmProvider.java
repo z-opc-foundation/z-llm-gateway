@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.support;
+package com.zifang.z.llm.gateway.core.support;
 
 import com.zifang.z.agent.kernel.llm.ChatCompletionsRequest;
 import com.zifang.z.agent.kernel.llm.ChatCompletionsResponse;

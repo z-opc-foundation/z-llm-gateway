@@ -1,4 +1,4 @@
-package com.zifang.z.llm.core.registry;
+package com.zifang.z.llm.gateway.core.registry;
 
 import com.zifang.z.agent.kernel.llm.LlmProvider;
 import com.zifang.z.agent.kernel.llm.provider.AnthropicProvider;
@@ -7,8 +7,8 @@ import com.zifang.z.agent.kernel.llm.provider.DeepSeekProvider;
 import com.zifang.z.agent.kernel.llm.provider.GeminiProvider;
 import com.zifang.z.agent.kernel.llm.provider.OpenAIProvider;
 import com.zifang.z.agent.kernel.llm.provider.QwenProvider;
-import com.zifang.z.llm.api.dto.LlmCredential;
-import com.zifang.z.llm.api.dto.Vendor;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
+import com.zifang.z.llm.gateway.api.dto.Vendor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

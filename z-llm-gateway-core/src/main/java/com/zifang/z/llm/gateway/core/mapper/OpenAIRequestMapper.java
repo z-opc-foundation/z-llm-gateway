@@ -1,11 +1,11 @@
-package com.zifang.z.llm.core.mapper;
+package com.zifang.z.llm.gateway.core.mapper;
 
 import com.zifang.util.json.JsonCursor;
 import com.zifang.util.json.JsonUtil;
-import com.zifang.z.llm.api.dto.ContentPart;
-import com.zifang.z.llm.api.dto.ToolSpec;
-import com.zifang.z.llm.api.dto.UnifiedMessage;
-import com.zifang.z.llm.api.dto.UnifiedRequest;
+import com.zifang.z.llm.gateway.api.dto.ContentPart;
+import com.zifang.z.llm.gateway.api.dto.ToolSpec;
+import com.zifang.z.llm.gateway.api.dto.UnifiedMessage;
+import com.zifang.z.llm.gateway.api.dto.UnifiedRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +106,7 @@ public class OpenAIRequestMapper {
 
         JsonCursor tcArr = m.path("tool_calls");
         if (tcArr.isArray() && tcArr.size() > 0) {
-            List<com.zifang.z.llm.api.dto.ToolCall> tcs = new ArrayList<>();
+            List<com.zifang.z.llm.gateway.api.dto.ToolCall> tcs = new ArrayList<>();
             for (JsonCursor t : tcArr.elements()) {
                 tcs.add(parseToolCall(t));
             }
@@ -115,13 +115,13 @@ public class OpenAIRequestMapper {
         return um;
     }
 
-    private com.zifang.z.llm.api.dto.ToolCall parseToolCall(JsonCursor t) {
-        com.zifang.z.llm.api.dto.ToolCall tc = new com.zifang.z.llm.api.dto.ToolCall();
+    private com.zifang.z.llm.gateway.api.dto.ToolCall parseToolCall(JsonCursor t) {
+        com.zifang.z.llm.gateway.api.dto.ToolCall tc = new com.zifang.z.llm.gateway.api.dto.ToolCall();
         tc.setId(textOrNull(t, "id"));
         tc.setType(textOrNull(t, "type"));
         JsonCursor fn = t.path("function");
         if (!fn.isMissing() && !fn.isNull()) {
-            com.zifang.z.llm.api.dto.ToolCall.FunctionCall f = new com.zifang.z.llm.api.dto.ToolCall.FunctionCall();
+            com.zifang.z.llm.gateway.api.dto.ToolCall.FunctionCall f = new com.zifang.z.llm.gateway.api.dto.ToolCall.FunctionCall();
             f.setName(textOrNull(fn, "name"));
             f.setArguments(textOrNull(fn, "arguments"));
             tc.setFunction(f);
