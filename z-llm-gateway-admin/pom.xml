@@ -26,7 +26,7 @@
          `*:*` 排除在这里吃掉了 logback-classic / logback-core / log4j-to-slf4j / jul-to-slf4j
          （判定与"刻意不补回"的理由写在 z-llm-gateway-starter/pom.xml 的对应注释里，同一把尺）。 -->
 
-    <url>https://github.com/z-opc-foundation/z-llm</url>
+    <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -50,7 +50,7 @@
     <scm>
         <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
         <developerConnection>scm:ssh:git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
-        <url>https://github.com/z-opc-foundation/z-llm</url>
+        <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
         <tag>HEAD</tag>
     </scm>
 

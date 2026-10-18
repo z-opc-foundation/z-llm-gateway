@@ -23,7 +23,7 @@
          由 parent 下发。下面自家 sibling 的 <version>${revision}</version> 保持不动：根 pom 的
          <dependencyManagement> 已把 5 个 reactor 坐标钉成同一个 ${revision}，两处同源不会分叉。 -->
 
-    <url>https://github.com/z-opc-foundation/z-llm</url>
+    <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -47,7 +47,7 @@
     <scm>
         <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
         <developerConnection>scm:ssh:git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
-        <url>https://github.com/z-opc-foundation/z-llm</url>
+        <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
         <tag>HEAD</tag>
     </scm>
 

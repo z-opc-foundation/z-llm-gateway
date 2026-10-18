@@ -23,7 +23,7 @@
          由 parent 下发。本模块唯一的依赖 jackson-annotations 一直就是零 <version>（吃受管项），
          迁移后那份受管项来自地板的 jackson-bom。 -->
 
-    <url>https://github.com/z-opc-foundation/z-llm</url>
+    <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -47,7 +47,7 @@
     <scm>
         <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
         <developerConnection>scm:ssh:git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
-        <url>https://github.com/z-opc-foundation/z-llm</url>
+        <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
         <tag>HEAD</tag>
     </scm>
 

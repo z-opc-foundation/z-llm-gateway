@@ -37,7 +37,7 @@
          冒烟测试 ZLlmAutoConfigurationSmokeTest 只断言 bean 存在，不读日志：迁移前后
          本模块 test 数与全仓 test 数逐格相同（0 F / 0 E）。 -->
 
-    <url>https://github.com/z-opc-foundation/z-llm</url>
+    <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -61,7 +61,7 @@
     <scm>
         <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
         <developerConnection>scm:ssh:git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
-        <url>https://github.com/z-opc-foundation/z-llm</url>
+        <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
         <tag>HEAD</tag>
     </scm>
 

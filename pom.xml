@@ -41,7 +41,7 @@
 
     <name>z-llm-gateway (LLM Gateway)</name>
     <description>中心化 LLM 网关, 暴露 OpenAI/Anthropic 标准协议, 后端 6 vendor provider 通过 z-agent-kernel-llm 调用</description>
-    <url>https://github.com/z-opc-foundation/z-llm</url>
+    <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
 
     <licenses>
         <license>
@@ -66,7 +66,7 @@
     <scm>
         <connection>scm:git:https://github.com/z-opc-foundation/z-llm-gateway.git</connection>
         <developerConnection>scm:ssh://git@github.com/z-opc-foundation/z-llm-gateway.git</developerConnection>
-        <url>https://github.com/z-opc-foundation/z-llm</url>
+        <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
         <tag>HEAD</tag>
     </scm>
 
