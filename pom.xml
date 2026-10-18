@@ -35,7 +35,7 @@
         发版模式: reversion (CI-friendly versions) + flatten-maven-plugin, 跟 z-boot 同源.
     -->
     <groupId>io.github.yuku123</groupId>
-    <artifactId>z-llm</artifactId>
+    <artifactId>z-llm-gateway</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
@@ -71,11 +71,11 @@
     </scm>
 
     <modules>
-        <module>z-llm-api</module>
-        <module>z-llm-core</module>
-        <module>z-llm-starter</module>
-        <module>z-llm-admin</module>
-        <module>z-llm-config</module>
+        <module>z-llm-gateway-api</module>
+        <module>z-llm-gateway-core</module>
+        <module>z-llm-gateway-starter</module>
+        <module>z-llm-gateway-admin</module>
+        <module>z-llm-gateway-config</module>
     </modules>
 
     <properties>
@@ -152,33 +152,33 @@
                  与 z-mq / z-rpc 同一写法。 -->
             <dependency>
                 <groupId>io.github.yuku123</groupId>
-                <artifactId>z-llm</artifactId>
+                <artifactId>z-llm-gateway</artifactId>
                 <version>${revision}</version>
                 <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
-                <artifactId>z-llm-api</artifactId>
+                <artifactId>z-llm-gateway-api</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
-                <artifactId>z-llm-core</artifactId>
+                <artifactId>z-llm-gateway-core</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
-                <artifactId>z-llm-starter</artifactId>
+                <artifactId>z-llm-gateway-starter</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
-                <artifactId>z-llm-admin</artifactId>
+                <artifactId>z-llm-gateway-admin</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
-                <artifactId>z-llm-config</artifactId>
+                <artifactId>z-llm-gateway-config</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -229,17 +229,17 @@
             <dependency>
                 <groupId>io.github.yuku123</groupId>
                 <artifactId>z-util-core</artifactId>
-                <version>1.2.1</version>
+                <version>1.2.2</version>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
                 <artifactId>z-util-parser-json</artifactId>
-                <version>1.2.1</version>
+                <version>1.2.2</version>
             </dependency>
             <dependency>
                 <groupId>io.github.yuku123</groupId>
                 <artifactId>z-util-dsl-kernel</artifactId>
-                <version>1.2.1</version>
+                <version>1.2.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

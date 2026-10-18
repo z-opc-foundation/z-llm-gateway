@@ -1,4 +1,4 @@
-# z-llm
+# z-llm-gateway
 
 > LLM 网关 —— 对外一张 **OpenAI Chat Completions / Anthropic Messages** 双协议面，对内一张多 vendor 凭据池。
 
@@ -13,13 +13,13 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 
 | 字段 | 值 |
 |------|-----|
-| **仓库** | `z-llm`（LLM Gateway，中心化协议面） |
-| **Maven 坐标** | `io.github.yuku123:z-llm`（聚合 pom）+ `z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` |
+| **仓库** | `z-llm-gateway`（LLM Gateway，中心化协议面） |
+| **Maven 坐标** | `io.github.yuku123:z-llm-gateway`（聚合 pom）+ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-admin` |
 | **当前版本** | `0.1.7`（根 POM `<revision>`，CI-friendly versions + 常开 `flatten-maven-plugin`（`oss` 模式，剥 parent）） |
 | **父项目** | `io.github.yuku123:z-boot-parent:1.0.21`（`<relativePath/>` 留空，parent 在 repo1 不在磁盘；2026-09-29 从"无 parent 自包含"迁过来，版本键由 12 格收到 9 格） |
-| **Maven Central** | 已发布并实测（2026-09-30 逐件 ranged GET）：`z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` 的 `0.1.7` pom+jar 全 200；聚合 `z-llm:0.1.7` 只有 pom（`packaging=pom`，jar 404 属正常）。`maven-metadata.xml` 的 `latest`/`release` 均为 `0.1.7`，历史版本 `0.1.0`–`0.1.7` 全在架 |
+| **Maven Central** | 已发布并实测（2026-09-30 逐件 ranged GET）：`z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` 的 `0.1.7` pom+jar 全 200（旧坐标，改名前）；聚合 `z-llm:0.1.7` 只有 pom（`packaging=pom`，jar 404 属正常）。`maven-metadata.xml` 的 `latest`/`release` 均为 `0.1.7`，历史版本 `0.1.0`–`0.1.7` 全在架 |
 | **版本对齐** | `z-boot-fleet:1.0.1`（repo1 实测那份）的 `<z-llm.version>` 已钉 `0.1.7`，与本仓 `<revision>` 同格 |
-| **模块数** | 4（`z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin`，全部在 reactor 里，无 `maven.deploy.skip`） |
+| **模块数** | 4（`z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-admin`，全部在 reactor 里，无 `maven.deploy.skip`） |
 | **默认端口** | 不适用 —— 本仓是库 + starter，**没有** bootable 主类、`application*.yml` 或 `server.port`（实测全仓 0 个 `application*` 文件）。端点挂在宿主应用的端口与 context-path 之下 |
 | **运行口径** | Java 8 · Spring Boot 2.7.18 · `javax.servlet` |
 | **配置前缀** | `z.llm`（`GatewayProperties`），总开关 `z.llm.enabled` |
@@ -29,8 +29,8 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 
 ## 🎯 能力清单
 
-每一条都能对应到 `z-llm-core/src/main/java/com/zifang/z/llm/core/` 下的一个类（最后两行落在
-`z-llm-starter` 与 `z-llm-admin`）：
+每一条都能对应到 `z-llm-gateway-core/src/main/java/com/zifang/z/llm/gateway/core/` 下的一个类（最后两行落在
+`z-llm-gateway-starter` 与 `z-llm-gateway-admin`）：
 
 | 能力 | 实现 | 说明 |
 |------|------|------|
@@ -48,8 +48,8 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 | 多模态直连 | `service/MultimodalChatRelay` | 带图请求绕过 kernel provider 直连上游（provider 传不了图） |
 | 向量端点 | `service/EmbeddingService` | 各家 embeddings 形状分形 |
 | 状态码信封 | `controller/GlobalExceptionHandler` | `{"error":{"message","type","code","param"}}` |
-| 自动装配 | `z-llm-starter` → `ZLlmAutoConfiguration`（13 个 `@Bean`，全部 `zLlm` 前缀）+ `ZLlmCoreScanConfig` | `META-INF/spring.factories` 注册，`z.llm.enabled=true` 才装配 |
-| 控制面 | `z-llm-admin`：`AdminController` / `AdminUiController` / `AdminQueryService` / `ZLlmAdminAutoConfiguration` | `z.llm.expose-admin=true` 才注册 |
+| 自动装配 | `z-llm-gateway-starter` → `ZLlmAutoConfiguration`（13 个 `@Bean`，全部 `zLlm` 前缀）+ `ZLlmCoreScanConfig` | `META-INF/spring.factories` 注册，`z.llm.enabled=true` 才装配 |
+| 控制面 | `z-llm-gateway-admin`：`AdminController` / `AdminUiController` / `AdminQueryService` / `ZLlmAdminAutoConfiguration` | `z.llm.expose-admin=true` 才注册 |
 
 ### vendor 支持口径（只讲代码，不背书连通性）
 
@@ -77,26 +77,26 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 ## 🏗️ 项目结构
 
 ```
-z-llm/
+z-llm-gateway/
 ├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.0.21，<revision>=0.1.7 单一真源，常开 oss flatten
 ├── LICENSE                # MIT
-├── z-llm-api/             # DTO + Vendor 枚举 + GatewayException（只依赖 jackson-annotations，无 Spring）
-├── z-llm-core/            # 网关核心：controller / mapper / router / registry / resilience / service / usage / upstream
-├── z-llm-starter/         # ZLlmAutoConfiguration + ZLlmCoreScanConfig + META-INF/spring.factories
-└── z-llm-admin/           # 控制面 REST + Thymeleaf 概览页（templates/z-llm-admin/index.html）
+├── z-llm-gateway-api/             # DTO + Vendor 枚举 + GatewayException（只依赖 jackson-annotations，无 Spring）
+├── z-llm-gateway-core/            # 网关核心：controller / mapper / router / registry / resilience / service / usage / upstream
+├── z-llm-gateway-starter/         # ZLlmAutoConfiguration + ZLlmCoreScanConfig + META-INF/spring.factories
+└── z-llm-gateway-admin/           # 控制面 REST + Thymeleaf 概览页（templates/z-llm-admin/index.html）
 ```
 
 代码体量实测：`src/main/java` 共 50 支（api 17 / core 25 / starter 3 / admin 5），`src/test/java` 共 24 支。
 
 下面几条差异都是 POM 与发布层面的实测事实（与 z-ctc 那类仓对照着看最容易踩）：
 
-- **本仓没有"不进 Central"的模块**：5 个 POM 里 `maven.deploy.skip` 命中 0 处，`z-llm-admin` 同样发布
+- **本仓没有"不进 Central"的模块**：5 个 POM 里 `maven.deploy.skip` 命中 0 处，`z-llm-gateway-admin` 同样发布
   （repo1 上 `z-llm-admin-0.1.7.jar` 实测 200）。它的 `/z-llm/admin/api-keys` 只回显掩码，但**部署方若把
   控制面暴露到公网仍需自行挂鉴权** —— 见 [API 一览](#-api-一览)。
-- **`z-llm-admin` 不是可执行应用**：它是 `jar` 打包、没有 `spring-boot-maven-plugin` 的 repackage、
+- **`z-llm-gateway-admin` 不是可执行应用**：它是 `jar` 打包、没有 `spring-boot-maven-plugin` 的 repackage、
   也没有主类，`target/` 里就是普通库 jar。想跑 HTTP 服务必须挂进宿主应用（如 z-opc 主 starter）。
 - **控制面是 compile 线上唯一带 `spring-boot-starter-web` 的一支**（另带 thymeleaf）；
-  `z-llm-core` / `z-llm-starter` 只取 `spring-web` / `spring-webmvc` / `spring-boot(-autoconfigure)`，
+  `z-llm-gateway-core` / `z-llm-gateway-starter` 只取 `spring-web` / `spring-webmvc` / `spring-boot(-autoconfigure)`，
   容器由宿主决定。
 - **本仓不落库**：全仓没有任何 MyBatis/JDBC/连接池依赖，凭据与 ApiKey 只来自配置。
 - **没有 `_doc/` 目录**，也没有 `Dockerfile` / `docker-compose*.yml` / `deploy/` / `k8s/` / `Makefile`
@@ -106,17 +106,17 @@ z-llm/
 
 ## 🔧 技术栈
 
-版本取自 `z-llm-core:0.1.7` 与 `z-agent-kernel-llm:0.1.0` 在 repo1 上的**已发布 POM**（不是本仓源码里的属性名）：
+版本取自 `z-llm-gateway-core:0.1.7` 与 `z-agent-kernel-llm:0.1.0` 在 repo1 上的**已发布 POM**（不是本仓源码里的属性名）：
 
 | 层级 | 技术 |
 |------|------|
 | 语言 / 运行时 | Java 8（`maven.compiler.source/target=8` 由 `z-boot-parent` 下发） |
 | 框架 | Spring Boot 2.7.18（版本由地板 `z-boot-dependencies` 供给，本仓不再 import Boot BOM） |
 | Web 层 | `spring-web` / `spring-webmvc` 5.3.39，SSE 用手写 `PrintWriter`；Servlet API 锁 `javax.servlet-api` 4.0.1 |
-| JSON | `jackson-databind` / `jackson-core` 2.18.6（`z-llm-api` 只用 `jackson-annotations` 把 DTO 钉成 OpenAI 线格式） |
+| JSON | `jackson-databind` / `jackson-core` 2.18.6（`z-llm-gateway-api` 只用 `jackson-annotations` 把 DTO 钉成 OpenAI 线格式） |
 | 上游调用 | `z-agent-kernel-llm` / `-message` / `-types` / `-tool` **0.1.0**，其 HTTP 走 okhttp `4.12.0`（+ `okhttp-sse`） |
 | 日志 | 只依赖 `slf4j-api` 门面 1.7.36；实现由宿主带。地板对 `spring-boot-starter-logging` 挂 `*:*` 排除，本仓刻意不补回 logback/log4j2 |
-| 控制面视图 | `spring-boot-starter-thymeleaf`（单页 `z-llm-admin/index.html`） |
+| 控制面视图 | `spring-boot-starter-thymeleaf`（单页 `z-llm-gateway-admin/index.html`） |
 | 测试 | JUnit 4.13.2 + `spring-test`（MockMvc）+ `json-path`；starter 冒烟用 `spring-boot-starter-test` + `junit-vintage-engine`；admin 用 `assertj-core` |
 | 构建 | Maven（`revision` + flatten `oss`），发布走 `central` profile（sources / javadoc / gpg / central-publishing） |
 
@@ -138,19 +138,19 @@ mvn clean install -DskipTests
 构建要求 parent 可解析：`io.github.yuku123:z-boot-parent:1.0.21`（repo1 实测 pom 200）。
 第三方版本一律走父链（地板 + fleet），模块 POM 里不该再出现字面版本钉。
 
-### 消费入口：直引 `z-llm-starter`，还是走聚合 starter
+### 消费入口：直引 `z-llm-gateway-starter`，还是走聚合 starter
 
 POM 实测到的两条路，本仓不替你选：
 
 | 入口 | POM 里实际写了什么 | 结论 |
 |------|--------------------|------|
-| `io.github.yuku123:z-llm-starter` | 由本仓发布，版本随 `<revision>` / fleet 表 | 精确控版的直连口。`z-boot-starter-web` 之类容器**不会**被它带进来，宿主自备 |
-| `io.github.yuku123:z-boot-llm-starter` | 位于 `z-boot/z-boot-integration-starters/`，`<dependencies>` 只有 `z-llm-starter` 一支且不带 version，版本吃它 import 的 `z-boot-fleet:1.0.1`（那份 `<z-llm.version>` = 0.1.7） | 一行 import 的聚合口，等价于上面，但版本要等 fleet 抬格才跟上 |
+| `io.github.yuku123:z-llm-gateway-starter` | 由本仓发布，版本随 `<revision>` / fleet 表 | 精确控版的直连口。`z-boot-starter-web` 之类容器**不会**被它带进来，宿主自备 |
+| `io.github.yuku123:z-boot-llm-starter` | 位于 `z-boot/z-boot-integration-starters/`，`<dependencies>` 只有 `z-llm-gateway-starter` 一支且不带 version，版本吃它 import 的 `z-boot-fleet:1.0.1`（那份 `<z-llm.version>` = 0.1.7） | 一行 import 的聚合口，等价于上面，但版本要等 fleet 抬格才跟上 |
 
 真实消费方是怎么选的（读它们的 POM）：`z-opc/bootstraps/z-opc-main-starter/pom.xml` 在 2026-09-24
-起**绕开** `z-boot-llm-starter`、直引 `z-llm-starter`，注释写的原因是"聚合那版锁的 z-llm 落后"；
-`z-opc/z-agent/z-agent-center/z-agent-center-core` 则直接引 `z-llm-api` + `z-llm-core` + `z-llm-starter`。
-⇒ 需要对齐到具体某一版时直引 `z-llm-starter`；只要"有一个能用的 L3 网关"时用聚合 starter 更省事。
+起**绕开** `z-boot-llm-starter`、直引 `z-llm-gateway-starter`，注释写的原因是"聚合那版锁的 z-llm 落后"；
+`z-opc/z-agent/z-agent-center/z-agent-center-core` 则直接引 `z-llm-gateway-api` + `z-llm-gateway-core` + `z-llm-gateway-starter`。
+⇒ 需要对齐到具体某一版时直引 `z-llm-gateway-starter`；只要"有一个能用的 L3 网关"时用聚合 starter 更省事。
 
 ### 打开开关 + 注入凭据
 
@@ -194,7 +194,7 @@ z:
 
 ## 🔌 API 一览
 
-数据面（`z-llm-core`，前缀由宿主决定；下表路径即 controller 上的 `@RequestMapping("/v1")`）：
+数据面（`z-llm-gateway-core`，前缀由宿主决定；下表路径即 controller 上的 `@RequestMapping("/v1")`）：
 
 | 方法 | 路径 | Controller | 说明 |
 | --- | --- | --- | --- |
@@ -210,7 +210,7 @@ z:
 上游只给裸名时由 `ModelNames#external` 补回调用方使用的 vendor 前缀，kernel 主链路与多模态直连共用
 同一份规则，避免同一模型经两条路得到两种 id。
 
-控制面（`z-llm-admin`）**默认不注册**，打开需要两个条件同时成立：
+控制面（`z-llm-gateway-admin`）**默认不注册**，打开需要两个条件同时成立：
 
 ```yaml
 z.llm:
@@ -412,23 +412,23 @@ kernel 没公开常量 —— 是已知重复，不是同一个源）。
 ## 🧪 测试
 
 ```bash
-mvn -o -pl z-llm-core -am test       # 必须带 -am
+mvn -o -pl z-llm-gateway-core -am test       # 必须带 -am
 mvn -B test                          # 全 reactor
 ```
 
-`-am` 不是可省的：不带它时 `z-llm-api` 会从本地 m2 解析到已发布的旧 jar，新增的 DTO 直接
-`NoClassDefFoundError`。改过 `z-llm-api` 后要让消费方看到，需要 `mvn install`。
+`-am` 不是可省的：不带它时 `z-llm-gateway-api` 会从本地 m2 解析到已发布的旧 jar，新增的 DTO 直接
+`NoClassDefFoundError`。改过 `z-llm-gateway-api` 后要让消费方看到，需要 `mvn install`。
 
-静态计数（2026-10-06 `grep @Test` 实测）：`z-llm-core` 147 个测试方法、`z-llm-starter` 2、`z-llm-admin` 2。
+静态计数（2026-10-06 `grep @Test` 实测）：`z-llm-gateway-core` 147 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 2。
 下表是同日全 reactor 跑通的 surefire 读数——两个数一个是静态计数、一个是运行汇总，
 口径不同，不要互相校正（`ProviderInvokerBudgetTest` 的 6 个方法与静态计数一致，
 差额来自 `@ParameterizedTest` 一类不由 `@Test` 计数的用法）：
 
 | 模块 | Tests | Failures | Errors | Skipped |
 | --- | --- | --- | --- | --- |
-| `z-llm-core` | 147 | 0 | 0 | 5 |
-| `z-llm-starter` | 2 | 0 | 0 | 0 |
-| `z-llm-admin` | 2 | 0 | 0 | 0 |
+| `z-llm-gateway-core` | 147 | 0 | 0 | 5 |
+| `z-llm-gateway-starter` | 2 | 0 | 0 | 0 |
+| `z-llm-gateway-admin` | 2 | 0 | 0 | 0 |
 
 覆盖层面：双协议 HTTP 线格式（MockMvc，含 embeddings 与 Anthropic 转发）、请求映射、参数下沉、
 模型路由、凭据池 failover 与状态码、**跨凭据重试的总时长预算**、限流三口径、记账、
@@ -436,13 +436,13 @@ starter 装配 smoke、控制面注册开关与 key 掩码。
 
 ### 真实上游 E2E
 
-`z-llm-core/src/test/java/com/zifang/z/llm/core/e2e/RealUpstreamE2ETest` 走真网络、真 provider
+`z-llm-gateway-core/src/test/java/com/zifang/z/llm/core/e2e/RealUpstreamE2ETest` 走真网络、真 provider
 （不经测试替身），由环境变量门控：
 
 ```bash
 Z_LLM_E2E_OPENAI_API_KEY='<注入，勿写入文件>' \
 Z_LLM_E2E_ANTHROPIC_API_KEY='<注入，勿写入文件>' \
-mvn -o -pl z-llm-core -am test -Dtest=RealUpstreamE2ETest
+mvn -o -pl z-llm-gateway-core -am test -Dtest=RealUpstreamE2ETest
 ```
 
 模型名可用 `Z_LLM_E2E_OPENAI_MODEL`（默认 `gpt-4o-mini`）、`Z_LLM_E2E_OPENAI_EMBED_MODEL`
@@ -470,7 +470,7 @@ mvn -B -P central clean deploy
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' \
-  https://repo1.maven.org/maven2/io/github/yuku123/z-llm-core/<版>/z-llm-core-<版>.pom
+  https://repo1.maven.org/maven2/io/github/yuku123/z-llm-gateway-core/<版>/z-llm-gateway-core-<版>.pom
 ```
 
 更硬的验收是从干净本地仓拉一次：
@@ -478,18 +478,18 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 ```bash
 mvn -B -Dmaven.repo.local=/tmp/m2-central-check dependency:get \
   -Dtransitive=false -DremoteRepositories=https://repo1.maven.org/maven2 \
-  -Dartifact=io.github.yuku123:z-llm-starter:<版>
+  -Dartifact=io.github.yuku123:z-llm-gateway-starter:<版>
 ```
 
 聚合 pom 是 `packaging=pom`，`dependency:get` 必须显式带类型 `-Dartifact=io.github.yuku123:z-llm:<版>:pom`。
 历史发布节奏实测（0.1.4）：`uploaded` → repo1 五个构件**同时** 200 约 21 分钟，中途 404 不能当失败证据。
 
 发布形状（本轮再次实测）：`flatten-maven-plugin` 是常开（不挂 profile）、`flattenMode=oss`，
-repo1 上 `z-llm`/`z-llm-starter`/`z-llm-core` 的 `0.1.7` POM 里 `<parent>` 计数为 0、版本落成字面量 ——
+repo1 上 `z-llm`/`z-llm-gateway-starter`/`z-llm-gateway-core` 的 `0.1.7` POM 里 `<parent>` 计数为 0、版本落成字面量 ——
 消费方**不需要**能解析 `z-boot-parent` 就能拉本仓。
 
 运行形态：本仓无容器/编排资产（无 Dockerfile、compose、k8s、Makefile），产物就是 4 支 jar；
-部署方式 = 宿主应用引 starter、带自己的 web 容器与 `z.llm.*` 配置，或把 `z-llm-admin` 挂进同一个应用。
+部署方式 = 宿主应用引 starter、带自己的 web 容器与 `z.llm.*` 配置，或把 `z-llm-gateway-admin` 挂进同一个应用。
 
 ---
 
