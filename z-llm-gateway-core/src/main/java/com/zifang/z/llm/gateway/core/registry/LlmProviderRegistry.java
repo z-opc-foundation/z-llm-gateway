@@ -67,6 +67,16 @@ public class LlmProviderRegistry {
     }
 
     /**
+     * 该 vendor 下声明服务此 model 的凭据 (按 priority 升序).
+     *
+     * <p>路由必须经此而非 {@link #findByVendor}: 同 vendor 挂多个 OpenAI 兼容上游时,
+     * 只有 {@code allowedModels} 能区分请求该走哪一条。
+     */
+    public List<LlmCredential> credentialsFor(Vendor vendor, String model) {
+        return credentialStore.findByVendorAndModel(vendor, model);
+    }
+
+    /**
      * 用给定实例替换 (vendor, alias) 的 provider.
      *
      * <p>存在的意义: 让适配层 (如 z-agent-proxy 把三方 agent 伪装成 provider) 和测试

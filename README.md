@@ -161,7 +161,8 @@ POM 实测到的两条路，本仓不替你选：
 z:
   llm:
     enabled: true
-    credentials:                       # 上游 vendor 凭据；同 vendor 可配多条做 failover
+    credentials:                       # 上游 vendor 凭据；同 vendor 可配多条做 failover，
+                                       # 但同 vendor 挂不同上游时必须写 allowed-models 区分，见「同 vendor 挂多个上游」
       - alias: openai-primary
         vendor: openai
         api-key: ${OPENAI_API_KEY}     # 只写环境变量名；值禁止入库/入 jar/入镜像层
@@ -250,6 +251,33 @@ z.llm:
 2. `vendor/` 前缀命中 vendor
 3. 前缀不是任何 vendor（`meta-llama/Llama-3.1-70B` 这类）→ 按 provider 声明的 `supportsModel` 能力判定
 4. 裸名同样走能力判定
+
+### 同 vendor 挂多个上游（`allowedModels`）
+
+`vendor=openai` 既可以是 OpenAI 官方，也可以是任何 OpenAI 兼容端点（本地 Ollama 代理、智谱等）。
+`vendor` 相同就无法靠它区分，因此**用每条凭据的 `allowed-models` 白名单声明它服务哪些 model**：
+
+```yaml
+z.llm.credentials:
+  - alias: openai-official
+    vendor: openai
+    priority: 1
+    allowed-models: [gpt-4o, o3-mini]
+  - alias: openai-local
+    vendor: openai
+    priority: 2
+    base-url: http://127.0.0.1:11434/v1
+    allowed-models: ["qwen3:30b-a3b"]
+```
+
+口径：
+
+- 白名单为空（含 `["*"]`）＝ 不限制，行为与从前一致
+- 命中的凭据里取 `priority` 最低的那条；**低优先级的凭据不会抢走别的上游的 model**
+- 所有凭据都没覆盖该 model ⇒ 404，错因里写明是白名单不覆盖（而不是笼统的 "model not found"）
+- **一旦有凭据声明过白名单，本次请求就锁死在那一条**：`ProviderInvoker` 的 failover 池收窄到它，
+  因为同 vendor 的另一条凭据可能是另一个后端，换过去等于把请求发给了没被请求的上游
+- 全部未声明白名单时**不锁**，多把 AK 照旧参与 failover 与冷却轮换
 
 ### 流式
 

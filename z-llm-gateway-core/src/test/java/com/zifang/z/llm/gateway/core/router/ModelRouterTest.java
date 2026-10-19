@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -124,5 +125,77 @@ public class ModelRouterTest {
         assertTrue("expected namespaced ids",
                 router.availableModels().keySet().stream().allMatch(k -> k.startsWith("openai/")));
         assertTrue(router.availableModels().containsKey("openai/gpt-4o"));
+    }
+
+    // ---- 同 vendor 多上游: allowedModels 是唯一的区分手段 ----
+
+    private static LlmCredential openaiUpstream(String alias, int priority, String... models) {
+        LlmCredential c = TestFixtures.credential(Vendor.OPENAI, alias, priority);
+        c.setAllowedModels(java.util.Arrays.asList(models));
+        return c;
+    }
+
+    /**
+     * 两个 OpenAI 兼容上游 (官方 + 本地代理) 共用 vendor=OPENAI 时,
+     * 请求各自锁到声明服务该 model 的那一条凭据。
+     */
+    @Test
+    public void twoOpenAiCompatibleUpstreamsAreSplitByAllowedModels() {
+        LlmCredential official = openaiUpstream("openai-official", 1, "gpt-4o");
+        LlmCredential local = openaiUpstream("openai-local", 2, "qwen3:30b-a3b");
+        ModelRouter router = routerFor(TestFixtures.properties(official, local));
+
+        assertEquals("openai-official",
+                router.resolve("openai/gpt-4o").credentialAlias());
+        assertEquals("openai-local",
+                router.resolve("openai/qwen3:30b-a3b").credentialAlias());
+    }
+
+    /** priority 更低的那条若不服务该 model, 也不能抢走请求. */
+    @Test
+    public void lowerPriorityDoesNotStealAnotherUpstreamsModel() {
+        LlmCredential official = openaiUpstream("openai-official", 1, "gpt-4o");
+        LlmCredential local = openaiUpstream("openai-local", 2, "qwen3:30b-a3b");
+        ModelRouter router = routerFor(TestFixtures.properties(official, local));
+        ModelRouter.Resolved r = router.resolve("openai/qwen3:30b-a3b");
+        assertEquals("openai-local", r.credentialAlias());
+        assertEquals("qwen3:30b-a3b", r.bareModel());
+    }
+
+    /** 所有凭据都声明不服务该 model ⇒ 404, 且错因要写明是白名单不覆盖. */
+    @Test
+    public void modelOutsideEveryWhitelistIsNotFound() {
+        LlmCredential official = openaiUpstream("openai-official", 1, "gpt-4o");
+        LlmCredential local = openaiUpstream("openai-local", 2, "qwen3:30b-a3b");
+        ModelRouter router = routerFor(TestFixtures.properties(official, local));
+        try {
+            router.resolve("openai/o3-mini");
+            fail("expected 404");
+        } catch (GatewayException e) {
+            assertEquals(404, e.getHttpStatus());
+            assertTrue("错因应指向 allowedModels, 实际: " + e.getMessage(),
+                    e.getMessage().contains("allowedModels")
+                            || e.getMessage().contains("allowed models")
+                            || e.getMessage().contains("均未声明"));
+        }
+    }
+
+    /**
+     * 白名单一旦出现就把 failover 锁死; 全部未声明白名单时保持老行为 (多把 AK 轮换),
+     * 否则这条修复会顺手废掉 ProviderInvoker 的跨 AK failover。
+     */
+    @Test
+    public void whitelistLocksFailoverButPlainKeyPoolStaysRotating() {
+        LlmCredential restricted = openaiUpstream("openai-local", 1, "qwen3:30b-a3b");
+        LlmCredential unrestricted = TestFixtures.credential(Vendor.OPENAI, "openai-official", 2);
+        assertEquals("openai-local",
+                routerFor(TestFixtures.properties(restricted, unrestricted))
+                        .resolve("openai/qwen3:30b-a3b").credentialAlias());
+
+        LlmCredential a = TestFixtures.credential(Vendor.OPENAI, "ak-a", 1);
+        LlmCredential b = TestFixtures.credential(Vendor.OPENAI, "ak-b", 2);
+        assertNull("多把同上游 AK 不该被锁死",
+                routerFor(TestFixtures.properties(a, b))
+                        .resolve("openai/gpt-4o").credentialAlias());
     }
 }

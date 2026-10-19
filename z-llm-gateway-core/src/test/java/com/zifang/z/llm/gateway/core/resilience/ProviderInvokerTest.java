@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -149,6 +150,38 @@ public class ProviderInvokerTest {
             assertEquals(502, e.getHttpStatus());
             assertTrue(e.getMessage().contains("All 3 credential(s)"));
         }
+    }
+
+    /**
+     * 路由锁定到某条凭据后, 该凭据 429 也不得把请求转给同 vendor 的另一条 ——
+     * 那条是另一个后端, 转过去等于把请求发给了没被授权的上游。
+     */
+    @Test
+    public void lockedAliasNeverFailsOverToAnotherCredential() {
+        List<String> served = new ArrayList<>();
+        try {
+            invoker.execute(Vendor.OPENAI, "ak-b", 3, h -> {
+                served.add(h.alias());
+                throw new LlmException("openai", 429, "rate limit");
+            });
+            fail("expected the locked credential to surface its own failure");
+        } catch (GatewayException e) {
+            assertEquals(429, e.getHttpStatus());
+        }
+        assertEquals("只该试锁定的那一条, 实际试了: " + served,
+                Collections.singletonList("ak-b"), served);
+
+    }
+
+    /** 锁定的凭据全在冷却时, 兜底也只能兜回它自己, 不能兜到别的上游. */
+    @Test
+    public void lockedOverflowPoolStaysWithinAlias() {
+        invoker.reportFailure(invoker.candidates(Vendor.OPENAI, "ak-b").get(0),
+                new LlmException("openai", 429, "boom"));
+        assertTrue(invoker.candidates(Vendor.OPENAI, "ak-b").isEmpty());
+        List<ProviderInvoker.Handle> overflow = invoker.candidatesWithOverflow(Vendor.OPENAI, "ak-b");
+        assertEquals(1, overflow.size());
+        assertEquals("ak-b", overflow.get(0).alias());
     }
 
     /** 全池都被上游限流时 429 不能被压成笼统的 502: 客户端的正确动作是退避, 不是立刻重试. */

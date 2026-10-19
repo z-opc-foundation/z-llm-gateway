@@ -111,16 +111,34 @@ public class ProviderInvoker {
 
     /** failover 用的候选池 (含冷却兜底). */
     public List<Handle> candidatesForFailover(Vendor vendor) {
+        return candidatesForFailover(vendor, null);
+    }
+
+    /**
+     * failover 用的候选池, {@code alias} 非 null 时池子收窄到那一条凭据.
+     *
+     * <p>路由按 {@code allowedModels} 把请求锁定到某个上游后必须传 alias:
+     * 池子里混着别的上游时, 一次 429 就把请求转给了另一个后端。
+     */
+    public List<Handle> candidatesForFailover(Vendor vendor, String alias) {
         return properties.getRetry().isEnabled()
-                ? candidatesWithOverflow(vendor)
-                : candidates(vendor);
+                ? candidatesWithOverflow(vendor, alias)
+                : candidates(vendor, alias);
     }
 
     /** 按 priority 返回该 vendor 当前可用 (未冷却) 的凭据句柄. */
     public List<Handle> candidates(Vendor vendor) {
+        return candidates(vendor, null);
+    }
+
+    /** 按 priority 返回该 vendor 当前可用 (未冷却) 的凭据句柄; alias 非 null 时只返回那一条. */
+    public List<Handle> candidates(Vendor vendor, String alias) {
         List<Handle> out = new ArrayList<>();
         long now = System.currentTimeMillis();
         for (LlmCredential cred : credentialStore.findByVendor(vendor)) {
+            if (alias != null && !alias.equals(cred.getAlias())) {
+                continue;
+            }
             LlmProvider p = registry.get(vendor, cred.getAlias());
             if (p == null) {
                 continue;
@@ -138,12 +156,19 @@ public class ProviderInvoker {
 
     /** 全池为空时把冷却最浅的凭据放出来兜底, 避免一次限流让整个 vendor 拒绝服务. */
     public List<Handle> candidatesWithOverflow(Vendor vendor) {
-        List<Handle> available = candidates(vendor);
+        return candidatesWithOverflow(vendor, null);
+    }
+
+    public List<Handle> candidatesWithOverflow(Vendor vendor, String alias) {
+        List<Handle> available = candidates(vendor, alias);
         if (!available.isEmpty()) {
             return available;
         }
         List<Handle> all = new ArrayList<>();
         for (LlmCredential cred : credentialStore.findByVendor(vendor)) {
+            if (alias != null && !alias.equals(cred.getAlias())) {
+                continue;
+            }
             LlmProvider p = registry.get(vendor, cred.getAlias());
             if (p != null) {
                 all.add(new Handle(vendor, cred.getAlias(), p));
@@ -167,8 +192,20 @@ public class ProviderInvoker {
      * @param attemptsCap 本次最多尝试几个凭据 (含首个)
      */
     public <T> T execute(Vendor vendor, int attemptsCap, Function<Handle, T> body) {
+        return execute(vendor, null, attemptsCap, body);
+    }
+
+    /**
+     * 带 failover 的执行, 候选池可锁定到单条凭据.
+     *
+     * @see #execute(Vendor, int, Function)
+     * @param alias 路由锁定的凭据别名; null 表示该 vendor 全池参与
+     */
+    public <T> T execute(Vendor vendor, String alias, int attemptsCap, Function<Handle, T> body) {
         GatewayProperties.Retry retry = properties.getRetry();
-        List<Handle> pool = retry.isEnabled() ? candidatesWithOverflow(vendor) : candidatesOrSingle(vendor);
+        List<Handle> pool = retry.isEnabled()
+                ? candidatesWithOverflow(vendor, alias)
+                : candidatesOrSingle(vendor, alias);
         if (pool.isEmpty()) {
             throw GatewayException.internal("No active credential for vendor " + vendor, null);
         }
@@ -223,13 +260,13 @@ public class ProviderInvoker {
         return GatewayException.upstreamFailed(detail, last);
     }
 
-    private List<Handle> candidatesOrSingle(Vendor vendor) {
-        List<Handle> available = candidates(vendor);
+    private List<Handle> candidatesOrSingle(Vendor vendor, String alias) {
+        List<Handle> available = candidates(vendor, alias);
         if (!available.isEmpty()) {
             return available;
         }
         // 限流关闭时仍要能服务 (只取 priority 首个, 不看冷却).
-        return candidatesWithOverflow(vendor);
+        return candidatesWithOverflow(vendor, alias);
     }
 
     /** 该异常是否值得换一个凭据重试. */

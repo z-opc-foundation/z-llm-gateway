@@ -149,7 +149,7 @@ public class MultimodalChatRelay {
             }
         };
 
-        List<ProviderInvoker.Handle> pool = invoker.candidatesForFailover(vendor);
+        List<ProviderInvoker.Handle> pool = invoker.candidatesForFailover(vendor, resolved.credentialAlias());
         if (pool.isEmpty()) {
             throw GatewayException.internal("No active credential for vendor " + vendor, null);
         }

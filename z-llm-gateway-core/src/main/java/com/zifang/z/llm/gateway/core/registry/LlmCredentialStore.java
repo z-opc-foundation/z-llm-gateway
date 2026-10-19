@@ -107,6 +107,53 @@ public class LlmCredentialStore implements InitializingBean {
         return byAlias.get(alias);
     }
 
+    /**
+     * 该凭据是否声明自己服务这个 model.
+     *
+     * <p>{@code allowedModels} 为空 = 不限制; 否则按大小写不敏感的精确名匹配,
+     * 单条 {@code "*"} 同样视为不限制。两个 OpenAI 兼容上游 (如官方与本地
+     * Ollama/OpenAI 代理) 共用 {@code vendor=OPENAI} 时, 这个白名单是唯一的
+     * 区分手段 —— 否则按 priority 取第一个凭据, 两个上游会被当成同一个。
+     */
+    public boolean serves(LlmCredential cred, String model) {
+        if (cred == null || model == null) {
+            return false;
+        }
+        List<String> allowed = cred.getAllowedModels();
+        if (allowed == null || allowed.isEmpty()) {
+            return true;
+        }
+        for (String a : allowed) {
+            if (a == null) {
+                continue;
+            }
+            String t = a.trim();
+            if (t.isEmpty() || "*".equals(t)) {
+                return true;
+            }
+            if (t.equalsIgnoreCase(model)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 该 vendor 下声明服务此 model 的凭据 (按 priority 升序).
+     *
+     * <p>与 {@link #findByVendor} 的区别只在于多一道 {@code allowedModels} 过滤,
+     * 所以结果里 priority 最低的那条才是这次请求该用的凭据。
+     */
+    public List<LlmCredential> findByVendorAndModel(Vendor vendor, String model) {
+        List<LlmCredential> out = new ArrayList<>();
+        for (LlmCredential c : findByVendor(vendor)) {
+            if (serves(c, model)) {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
     /** 取该 vendor 的最优凭据 (priority 最低的 active 凭据). */
     public LlmCredential pick(Vendor vendor) {
         List<LlmCredential> list = findByVendor(vendor);

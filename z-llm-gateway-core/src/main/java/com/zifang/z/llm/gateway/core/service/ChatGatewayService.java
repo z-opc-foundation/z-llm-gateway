@@ -181,6 +181,7 @@ public class ChatGatewayService {
         final Vendor vendor = resolved.vendor();
         ProviderInvoker.Handle[] served = new ProviderInvoker.Handle[1];
         ChatCompletionsResponse kernelResp = invoker.execute(vendor,
+                resolved.credentialAlias(),
                 invoker.attemptsFor(vendor),
                 h -> {
                     served[0] = h;
@@ -229,7 +230,7 @@ public class ChatGatewayService {
             }
         };
 
-        List<ProviderInvoker.Handle> pool = invoker.candidatesForFailover(vendor);
+        List<ProviderInvoker.Handle> pool = invoker.candidatesForFailover(vendor, resolved.credentialAlias());
         if (pool.isEmpty()) {
             throw GatewayException.internal("No active credential for vendor " + vendor, null);
         }
