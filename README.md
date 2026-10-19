@@ -113,7 +113,7 @@ z-llm-gateway/
 | 层级 | 技术 |
 |------|------|
 | 语言 / 运行时 | Java 8（`maven.compiler.source/target=8` 由 `z-boot-parent` 下发） |
-| 框架 | Spring Boot 2.7.18（版本由地板 `z-boot-dependencies` 供给，本仓不再 import Boot BOM） |
+| 框架 | Spring Boot 2.7.18（版本由 `z-boot-parent` 自带地板供给，本仓不再 import Boot BOM） |
 | Web 层 | `spring-web` / `spring-webmvc` 5.3.39，SSE 用手写 `PrintWriter`；Servlet API 锁 `javax.servlet-api` 4.0.1 |
 | JSON | `jackson-databind` / `jackson-core` 2.18.6（`z-llm-gateway-api` 只用 `jackson-annotations` 把 DTO 钉成 OpenAI 线格式） |
 | 上游调用 | `z-agent-kernel-llm` / `-message` / `-types` / `-tool` **0.1.0**，其 HTTP 走 okhttp `4.12.0`（+ `okhttp-sse`） |
@@ -147,7 +147,7 @@ POM 实测到的两条路，本仓不替你选：
 | 入口 | POM 里实际写了什么 | 结论 |
 |------|--------------------|------|
 | `io.github.yuku123:z-llm-gateway-starter` | 由本仓发布，版本随 `<revision>` / fleet 表 | 精确控版的直连口。`z-boot-starter-web` 之类容器**不会**被它带进来，宿主自备 |
-| `io.github.yuku123:z-boot-llm-starter` | 位于 `z-boot/z-boot-integration-starters/`，`<dependencies>` 只有 `z-llm-gateway-starter` 一支且不带 version，版本吃它 import 的 `z-boot-fleet:1.0.1`（那份 `<z-llm.version>` = 0.1.7） | 一行 import 的聚合口，等价于上面，但版本要等 fleet 抬格才跟上 |
+| `io.github.yuku123:z-boot-llm-starter` | 位于 `z-boot/z-boot-integration-starters/`，`<dependencies>` 只有 `z-llm-gateway-starter` 一支且不带 version，版本吃 `z-boot-parent` 自身的 `<z-llm.version>`（现读 **0.1.7**，仍落后本仓 `0.1.8` 一格） | 一行 import 的聚合口，等价于上面，但版本要等 parent 抬格才跟上 |
 
 真实消费方是怎么选的（读它们的 POM）：`z-opc/bootstraps/z-opc-main-starter/pom.xml` 在 2026-09-24
 起**绕开** `z-boot-llm-starter`、直引 `z-llm-gateway-starter`，注释写的原因是"聚合那版锁的 z-llm 落后"；
