@@ -14,12 +14,12 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 | 字段 | 值 |
 |------|-----|
 | **仓库** | `z-llm-gateway`（LLM Gateway，中心化协议面） |
-| **Maven 坐标** | `io.github.yuku123:z-llm-gateway`（聚合 pom）+ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-admin` |
-| **当前版本** | `0.1.7`（根 POM `<revision>`，CI-friendly versions + 常开 `flatten-maven-plugin`（`oss` 模式，剥 parent）） |
-| **父项目** | `io.github.yuku123:z-boot-parent:1.0.21`（`<relativePath/>` 留空，parent 在 repo1 不在磁盘；2026-09-29 从"无 parent 自包含"迁过来，版本键由 12 格收到 9 格） |
-| **Maven Central** | 已发布并实测（2026-09-30 逐件 ranged GET）：`z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` 的 `0.1.7` pom+jar 全 200（旧坐标，改名前）；聚合 `z-llm:0.1.7` 只有 pom（`packaging=pom`，jar 404 属正常）。`maven-metadata.xml` 的 `latest`/`release` 均为 `0.1.7`，历史版本 `0.1.0`–`0.1.7` 全在架 |
-| **版本对齐** | `z-boot-fleet:1.0.1`（repo1 实测那份）的 `<z-llm.version>` 已钉 `0.1.7`，与本仓 `<revision>` 同格 |
-| **模块数** | 4（`z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-admin`，全部在 reactor 里，无 `maven.deploy.skip`） |
+| **Maven 坐标** | `io.github.yuku123:z-llm-gateway`（聚合 pom）+ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` / `z-llm-gateway-admin` |
+| **当前版本** | `0.1.8`（根 POM `<revision>`，CI-friendly versions + 常开 `flatten-maven-plugin`（`oss` 模式，剥 parent）） |
+| **父项目** | `io.github.yuku123:z-boot-parent:1.1.0`（`<relativePath/>` 留空，parent 在 repo1 不在磁盘；2026-09-29 从"无 parent 自包含"迁过来，版本键由 12 格收到 9 格） |
+| **Maven Central** | 已发布并实测（2026-10-19 逐件 ranged GET）：`0.1.8` 的 `z-llm-gateway`（聚合，仅 pom）/ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` 全 200；**`z-llm-gateway-admin` 未发**（`0.1.7` 与 `0.1.8` 两版 pom 实测均 404）。`maven-metadata.xml` 的 `latest`/`release` 均为 `0.1.8`。改名前的旧坐标 `z-llm` / `z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` 只到 `0.1.7`（`0.1.8` 实测 404） |
+| **版本对齐** | 接入面 pin 现在在 `z-boot-parent`（`z-boot-fleet` 文件夹已退役）：`<z-llm.version>0.1.7</z-llm.version>`，**落后本仓 `<revision>0.1.8` 一格**——`z-boot-parent` 抬格后本仓这批坐标才会被消费方按 `0.1.8` 解析 |
+| **模块数** | 5（`z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` / `z-llm-gateway-admin`，全部在 reactor 里；`maven.deploy.skip` 命中 0 处，但 admin 仍**不在** Central 上） |
 | **默认端口** | 不适用 —— 本仓是库 + starter，**没有** bootable 主类、`application*.yml` 或 `server.port`（实测全仓 0 个 `application*` 文件）。端点挂在宿主应用的端口与 context-path 之下 |
 | **运行口径** | Java 8 · Spring Boot 2.7.18 · `javax.servlet` |
 | **配置前缀** | `z.llm`（`GatewayProperties`），总开关 `z.llm.enabled` |
@@ -78,20 +78,22 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 
 ```
 z-llm-gateway/
-├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.0.21，<revision>=0.1.7 单一真源，常开 oss flatten
+├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.1.0，<revision>=0.1.8 单一真源，常开 oss flatten
 ├── LICENSE                # MIT
 ├── z-llm-gateway-api/             # DTO + Vendor 枚举 + GatewayException（只依赖 jackson-annotations，无 Spring）
 ├── z-llm-gateway-core/            # 网关核心：controller / mapper / router / registry / resilience / service / usage / upstream
 ├── z-llm-gateway-starter/         # ZLlmAutoConfiguration + ZLlmCoreScanConfig + META-INF/spring.factories
+├── z-llm-gateway-config/          # 配置面：LlmProvider / LlmModel / AgentToolTemplate 实体 + mapper + ZLlmConfigAutoConfiguration
 └── z-llm-gateway-admin/           # 控制面 REST + Thymeleaf 概览页（templates/z-llm-admin/index.html）
 ```
 
-代码体量实测：`src/main/java` 共 50 支（api 17 / core 25 / starter 3 / admin 5），`src/test/java` 共 24 支。
+代码体量实测：`src/main/java` 共 63 支（api 17 / core 25 / starter 3 / config 13 / admin 5），`src/test/java` 共 26 支（core 24 / starter 1 / admin 1）。
 
 下面几条差异都是 POM 与发布层面的实测事实（与 z-ctc 那类仓对照着看最容易踩）：
 
-- **本仓没有"不进 Central"的模块**：5 个 POM 里 `maven.deploy.skip` 命中 0 处，`z-llm-gateway-admin` 同样发布
-  （repo1 上 `z-llm-admin-0.1.7.jar` 实测 200）。它的 `/z-llm/admin/api-keys` 只回显掩码，但**部署方若把
+- **`z-llm-gateway-admin` 不上 Central**：它虽然没写 `maven.deploy.skip`（5 个 POM 里命中 0 处），
+  但 repo1 上 `z-llm-gateway-admin` 的 `0.1.7` 与 `0.1.8` pom **实测均 404**（旧坐标 `z-llm-admin:0.1.7` 倒是 200，
+  那是改名前那一版的产物）。它的 `/z-llm/admin/api-keys` 只回显掩码，但**部署方若把
   控制面暴露到公网仍需自行挂鉴权** —— 见 [API 一览](#-api-一览)。
 - **`z-llm-gateway-admin` 不是可执行应用**：它是 `jar` 打包、没有 `spring-boot-maven-plugin` 的 repackage、
   也没有主类，`target/` 里就是普通库 jar。想跑 HTTP 服务必须挂进宿主应用（如 z-opc 主 starter）。
@@ -106,7 +108,7 @@ z-llm-gateway/
 
 ## 🔧 技术栈
 
-版本取自 `z-llm-gateway-core:0.1.7` 与 `z-agent-kernel-llm:0.1.0` 在 repo1 上的**已发布 POM**（不是本仓源码里的属性名）：
+版本取自 `z-llm-gateway-core:0.1.8` 与 `z-agent-kernel-llm:0.1.0` 在 repo1 上的**已发布 POM**（不是本仓源码里的属性名）：
 
 | 层级 | 技术 |
 |------|------|
@@ -135,7 +137,7 @@ z-llm-gateway/
 mvn clean install -DskipTests
 ```
 
-构建要求 parent 可解析：`io.github.yuku123:z-boot-parent:1.0.21`（repo1 实测 pom 200）。
+构建要求 parent 可解析：`io.github.yuku123:z-boot-parent:1.1.0`（repo1 实测 pom 200）。
 第三方版本一律走父链（地板 + fleet），模块 POM 里不该再出现字面版本钉。
 
 ### 消费入口：直引 `z-llm-gateway-starter`，还是走聚合 starter
@@ -546,5 +548,15 @@ repo1 上 `z-llm`/`z-llm-gateway-starter`/`z-llm-gateway-core` 的 `0.1.7` POM �
 
 MIT，见仓库根 [`LICENSE`](LICENSE)（版权行 `Copyright (c) 2026 z-opc-foundation`）；根 POM 的
 `<licenses>` 同样声明 MIT License。
+
+---
+
+## 文档目录
+
+本项目文档统一收口在 `_doc/` 下（八类固定编号表，桶按需存在）:
+
+- [`_doc/001_arch/`](_doc/001_arch/) — 架构、接口、DB schema、协议、路线图
+  - [`00-overview.md`](_doc/001_arch/00-overview.md) — 项目总览：模块架构、核心功能、对外集成与上下游、
+    技术特点、目录结构
 
 _Maintained by the z-opc-foundation organization._
