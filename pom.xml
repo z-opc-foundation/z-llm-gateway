@@ -82,7 +82,7 @@
         <!-- 项目自身版本 -->
         <!-- 版本单一真源：抬号只改这一行（配下面常开的 oss flatten，入库/发布件里落成字面量）。
              自家 5 个 reactor 坐标在 <dependencyManagement> 里钉的就是 ${revision}。 -->
-        <revision>0.1.7</revision>
+        <revision>0.1.8</revision>
 
         <!-- JDK / 编译：maven.compiler.source=8 / maven.compiler.target=8 /
              project.build.sourceEncoding=UTF-8 三格与父链逐字节相同
@@ -142,9 +142,9 @@
                  ${project.version}，钉它才与 <version> 同源）。
                  这一格不是装饰：继承来的 DM 会改写**传递依赖**的版本，而 fleet 里 z-llm 那 4 条
                  钉的是 repo1 上已发布的 0.1.6（现读 z-boot-fleet/pom.xml:50
-                 `<z-llm.version>0.1.6</z-llm.version>`，坐标 803-818 四支）。本仓当前 revision
-                 也恰好是 0.1.6 ⇒ 这一版看不出差别，但 revision 抬到 0.1.7 而 fleet 还没跟着发时，
-                 starter/admin 的 tree 就会把 0.1.6 的旧字节码当 sibling 编进来（z-cache 试点实测：
+                 `<z-llm.version>0.1.6</z-llm.version>`，坐标 803-818 四支）。发版时本仓
+                 revision 与 fleet 各自独立 ⇒ 只要本仓抬号而 fleet 没跟着抬，starter/admin 的
+                 tree 就会把旧版字节码当 sibling 编进来（z-cache 试点实测：
                  shade 包把 1.3.5 打进 1.3.6 的包里）。
                  聚合 pom `z-llm` 这一条 fleet 没有（它只管 4 支 jar），写上是把 5 个 reactor 坐标
                  一次钉严；它 packaging=pom ⇒ 条目必须带 <type>pom</type>（受管项按
