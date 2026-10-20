@@ -48,7 +48,7 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 | 多模态直连 | `service/MultimodalChatRelay` | 带图请求绕过 kernel provider 直连上游（provider 传不了图） |
 | 向量端点 | `service/EmbeddingService` | 各家 embeddings 形状分形 |
 | 状态码信封 | `controller/GlobalExceptionHandler` | `{"error":{"message","type","code","param"}}` |
-| 自动装配 | `z-llm-gateway-starter` → `ZLlmAutoConfiguration`（13 个 `@Bean`，全部 `zLlm` 前缀）+ `ZLlmCoreScanConfig` | `META-INF/spring.factories` 注册，`z.llm.enabled=true` 才装配 |
+| 自动装配 | `z-llm-gateway-starter` → `ZLlmAutoConfiguration`（12 个 `@Bean`，全部 `zLlm` 前缀）+ `ZLlmCoreScanConfig` | `META-INF/spring.factories` 注册，`z.llm.enabled=true` 才装配 |
 | 控制面 | `z-llm-gateway-admin`：`AdminController` / `AdminUiController` / `AdminQueryService` / `ZLlmAdminAutoConfiguration` | `z.llm.expose-admin=true` 才注册 |
 
 ### vendor 支持口径（只讲代码，不背书连通性）
@@ -87,7 +87,7 @@ z-llm-gateway/
 └── z-llm-gateway-admin/           # 控制面 REST + Thymeleaf 概览页（templates/z-llm-admin/index.html）
 ```
 
-代码体量实测：`src/main/java` 共 63 支（api 17 / core 25 / starter 3 / config 13 / admin 5），`src/test/java` 共 26 支（core 24 / starter 1 / admin 1）。
+代码体量实测：`src/main/java` 共 63 支（api 17 / core 25 / starter 3 / config 13 / admin 5）；`src/test/java` 的各模块支数**只点名不计数**（api / config 无测试，core / starter / admin 有）—— 本仓 README 自守卫也落在 core 里，写死即漂。
 
 下面几条差异都是 POM 与发布层面的实测事实（与 z-ctc 那类仓对照着看最容易踩）：
 
@@ -374,7 +374,7 @@ kernel 没公开常量 —— 是已知重复，不是同一个源）。
 
 上表那套状态码只在异常真的落到本类头上时成立。合并进程里有两个坑，0.1.5 各钉了一条：
 
-- **bean 名带 `zLlm` 前缀**（`@Component("zLlmGlobalExceptionHandler")` + `ZLlmAutoConfiguration` 里 13 个
+- **bean 名带 `zLlm` 前缀**（`@Component("zLlmGlobalExceptionHandler")` + `ZLlmAutoConfiguration` 里 12 个
   `@Bean` 同名前缀）。Spring 默认按简单类名首字母小写注册，宿主或另一支 L3 库里只要有同名类，扫描期就
   `ConflictingBeanDefinitionException` 直接起不来，且 `allow-bean-definition-overriding` 救不了。
 - **advice 限定 `basePackages` + `@Order(HIGHEST_PRECEDENCE)`**。Spring 解析异常时按 advice 顺序逐个问
@@ -449,14 +449,14 @@ mvn -B test                          # 全 reactor
 `-am` 不是可省的：不带它时 `z-llm-gateway-api` 会从本地 m2 解析到已发布的旧 jar，新增的 DTO 直接
 `NoClassDefFoundError`。改过 `z-llm-gateway-api` 后要让消费方看到，需要 `mvn install`。
 
-静态计数（2026-10-06 `grep @Test` 实测）：`z-llm-gateway-core` 147 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 2。
+静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`）：`z-llm-gateway-core` 155 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 2。
 下表是同日全 reactor 跑通的 surefire 读数——两个数一个是静态计数、一个是运行汇总，
 口径不同，不要互相校正（`ProviderInvokerBudgetTest` 的 6 个方法与静态计数一致，
 差额来自 `@ParameterizedTest` 一类不由 `@Test` 计数的用法）：
 
 | 模块 | Tests | Failures | Errors | Skipped |
 | --- | --- | --- | --- | --- |
-| `z-llm-gateway-core` | 147 | 0 | 0 | 5 |
+| `z-llm-gateway-core` | 155 | 0 | 0 | 5 |
 | `z-llm-gateway-starter` | 2 | 0 | 0 | 0 |
 | `z-llm-gateway-admin` | 2 | 0 | 0 | 0 |
 
