@@ -310,4 +310,51 @@ public class ChatGatewayServiceTest {
         Object so = openai.requests().get(0).getProviderParams().get("stream_options");
         assertNotNull("include_usage must be injected when opted in", so);
     }
+
+    /**
+     * 回归: 真实 SSE provider 是异步的 —— streamChat 方法返回时一个 chunk 都还没来。
+     * 网关若把"方法返回"当成"流结束", 就会立刻判成功并给客户端补 [DONE],
+     * 上层永远拿不到内容 (Agent 就地聊天只会显示 [DONE])。
+     */
+    @Test
+    public void asyncProviderChunksArriveAfterMethodReturns() {
+        FakeLlmProvider async = new FakeLlmProvider("openai", "gpt-")
+                .streamAsync(true)
+                .streamTexts("async-hi");
+        registry.replace(Vendor.OPENAI, "ak-a", async);
+        registry.replace(Vendor.OPENAI, "ak-b", new FakeLlmProvider("openai", "gpt-").streamAsync(true));
+
+        List<UnifiedStreamChunk> chunks = new ArrayList<>();
+        AtomicInteger errors = new AtomicInteger();
+        AtomicInteger completions = new AtomicInteger();
+        service.streamChat(req("openai/gpt-4o", "hi"), key,
+                chunks::add, e -> errors.incrementAndGet(), completions::incrementAndGet);
+
+        assertEquals("async provider failure", 0, errors.get());
+        assertTrue("async chunks must reach the client, got " + chunks.size(), chunks.size() >= 1);
+        assertEquals("async-hi", chunks.get(0).getChoices().get(0).getDelta().getContent());
+        assertEquals("exactly one completion", 1, completions.get());
+    }
+
+    /**
+     * 回归: 上游"正常结束但零 chunk"是坏流 —— 客户端只会拿到一个空 SSE。
+     * 必须报错, 不能安静地当成功 (否则内容被丢在中间而没人知道)。
+     */
+    @Test
+    public void streamWithZeroChunksIsReportedAsError() {
+        FakeLlmProvider silent = new FakeLlmProvider("openai", "gpt-").streamSilent(true);
+        registry.replace(Vendor.OPENAI, "ak-a", silent);
+        registry.replace(Vendor.OPENAI, "ak-b", new FakeLlmProvider("openai", "gpt-").streamSilent(true));
+
+        AtomicInteger errors = new AtomicInteger();
+        try {
+            service.streamChat(req("openai/gpt-4o", "hi"), key,
+                    c -> fail("zero-chunk stream must not deliver chunks"), e -> errors.incrementAndGet(), () -> { });
+            fail("expected upstream failure for zero-chunk stream");
+        } catch (GatewayException expected) {
+            assertEquals(502, expected.getHttpStatus());
+            assertTrue(expected.getMessage().contains("no chunk"));
+        }
+        assertEquals("error must be reported once", 1, errors.get());
+    }
 }

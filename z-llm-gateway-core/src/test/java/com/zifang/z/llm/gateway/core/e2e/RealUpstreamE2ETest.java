@@ -108,6 +108,14 @@ public class RealUpstreamE2ETest {
         c.setVendor(vendor);
         c.setAlias("e2e-" + vendor.code());
         c.setApiKey(apiKey);
+        // 任何 OpenAI 兼容上游(MiniMax / DeepSeek / 本地 vLLM…)都能跑这条 E2E:
+        // 只给 key 会把请求打到 api.openai.com, 于是「网关流式在生产哑火」这类缺陷
+        // 在默认配置下永远复现不出来 —— 生产用的正是自定义 baseUrl。
+        String baseUrl = System.getenv(vendor == Vendor.OPENAI
+                ? "Z_LLM_E2E_OPENAI_BASE_URL" : "Z_LLM_E2E_ANTHROPIC_BASE_URL");
+        if (baseUrl != null && !baseUrl.trim().isEmpty()) {
+            c.setBaseUrl(baseUrl.trim());
+        }
         c.setPriority(1);
         c.setStatus("active");
         return c;

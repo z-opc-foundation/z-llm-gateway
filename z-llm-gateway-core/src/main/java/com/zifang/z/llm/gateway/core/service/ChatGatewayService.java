@@ -194,6 +194,14 @@ public class ChatGatewayService {
     }
 
     /**
+     * 流式等待上限: 上游读超时 + 5s 余量. 超时后按"上游没给完"处理, 不无限挂住请求线程.
+     */
+    private long streamWaitMillis() {
+        int sec = properties == null ? 300 : properties.getUpstreamReadTimeoutSec();
+        return Math.max(1, sec) * 1000L + 5000L;
+    }
+
+    /**
      * 流式 chat. 每个增量 chunk 通过 onChunk 吐给下游.
      *
      * <p>与同步版的差别: 只能在"还没吐出任何 chunk"时安全换凭据, 一旦向客户端吐过内容
@@ -242,7 +250,11 @@ public class ChatGatewayService {
             served = h;
             emitted.set(false);
             final Throwable[] asyncError = new Throwable[1];
+            final java.util.concurrent.CountDownLatch attemptDone = new java.util.concurrent.CountDownLatch(1);
             try {
+                // 必须用带 onComplete 的四参重载: SSE provider 是异步的, 方法返回时
+                // 一个 chunk 都还没来。按"方法返回=流结束"处理会立刻判成功、零 chunk
+                // 记账并给客户端补 [DONE], 上层永远等不到内容。
                 h.provider().streamChat(kernelReq,
                         chunk -> {
                             if (chunk == null) {
@@ -267,7 +279,13 @@ public class ChatGatewayService {
                         },
                         // 上游的失败是通过 onError 回调报出来的 (provider 不抛异常),
                         // 因此这里只暂存, 由外层循环决定"换凭据重试"还是"向客户端报错".
-                        err -> asyncError[0] = err);
+                        err -> {
+                            asyncError[0] = err;
+                            attemptDone.countDown();
+                        },
+                        attemptDone::countDown);
+                // 等流真的结束(上游关闭 / 出错), 不能凭 provider 方法返回就判成功
+                attemptDone.await(streamWaitMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 asyncError[0] = t;
             }
@@ -275,7 +293,8 @@ public class ChatGatewayService {
             if (asyncError[0] == null) {
                 lastError = null;
                 invoker.reportSuccess(h);
-                finish.run();
+                // 这里不能 finish.run(): 零 chunk 的坏流还没被判定, 先报完成会把
+                // 后续的报错吞掉 (onError 依赖 finished 从 false 翻到 true)。
                 break;
             }
             lastError = asyncError[0];
@@ -300,6 +319,19 @@ public class ChatGatewayService {
             throw GatewayException.upstreamFailed(
                     "stream failed after all credentials: " + lastError.getMessage(), lastError);
         }
+
+        // 流"正常结束但一个 chunk 都没有"同样是坏流: 上游没给内容, 客户端只会拿到
+        // 一个空 SSE。这种情况必须报错, 不能安静地当成功 (否则 Agent 就地聊天永远
+        // 只显示 [DONE], 没有任何人知道内容被丢在中间)。
+        if (chunkCount[0] == 0) {
+            usageLedger.recordFailure(key);
+            GatewayException zero = GatewayException.upstreamFailed(
+                    "upstream stream produced no chunk", null);
+            notifyErrorOnce(onError, finished, zero);
+            throw zero;
+        }
+
+        finish.run();
 
         UsageInfo seen = usage[2] == 1L
                 ? new UsageInfo((int) Math.min(Integer.MAX_VALUE, usage[0]),

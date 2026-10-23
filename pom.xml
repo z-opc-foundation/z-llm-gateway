@@ -111,7 +111,7 @@
              z-ctc.version 本仓 1.0.1 == fleet 1.0.1（现读 z-boot-fleet/pom.xml:36）⇒ 同值，已删。
              z-mist.version 本仓 1.0.0，父链**不供给**这个键（fleet 无 z-mist 格）⇒ 按"父链不供就留着"
                口径保留；0 个读者。 -->
-        <z-agent-kernel.version>0.1.0</z-agent-kernel.version>
+        <z-agent-kernel.version>0.2.4</z-agent-kernel.version>
         <z-config.version>1.0.1</z-config.version>
         <z-mist.version>1.0.0</z-mist.version>
 

@@ -31,6 +31,8 @@ public class FakeLlmProvider implements LlmProvider {
     private List<String> streamTexts = Arrays.asList("he", "llo");
     private String streamFinishReason = "stop";
     private boolean streamSetsUsage = true;
+    private boolean streamAsync = false;
+    private boolean streamSilent = false;
     private Consumer<ChatCompletionsRequest> onReceive;
 
     public FakeLlmProvider(String name, String... supportedModels) {
@@ -87,6 +89,44 @@ public class FakeLlmProvider implements LlmProvider {
             maybeFail(idx);
         } catch (Throwable t) {
             onError.accept(t);
+            return;
+        }
+        emitChunks(request, onChunk);
+    }
+
+    /**
+     * 真实的 SSE provider 是异步的: 方法返回时一个 chunk 都还没来, 内容在后台线程上吐。
+     * 这里复刻这个契约, 用来钉住"网关不能把方法返回当成流结束"。
+     */
+    @Override
+    public void streamChat(ChatCompletionsRequest request,
+                           Consumer<ChatCompletionsResponse> onChunk,
+                           Consumer<Throwable> onError,
+                           Runnable onComplete) {
+        if (!streamAsync) {
+            streamChat(request, onChunk, onError);
+            onComplete.run();
+            return;
+        }
+        record(request);
+        int idx = streamCalls.incrementAndGet() - 1;
+        Thread t = new Thread(() -> {
+            try {
+                maybeFail(idx);
+            } catch (Throwable failure) {
+                onError.accept(failure);
+                onComplete.run();
+                return;
+            }
+            emitChunks(request, onChunk);
+            onComplete.run();
+        }, "fake-llm-stream");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void emitChunks(ChatCompletionsRequest request, Consumer<ChatCompletionsResponse> onChunk) {
+        if (streamSilent) {
             return;
         }
         for (String text : streamTexts) {
@@ -150,6 +190,18 @@ public class FakeLlmProvider implements LlmProvider {
 
     public FakeLlmProvider streamSetsUsage(boolean b) {
         this.streamSetsUsage = b;
+        return this;
+    }
+
+    /** 复刻真实 SSE provider 的异步行为: 内容在后台线程上才吐出来. */
+    public FakeLlmProvider streamAsync(boolean b) {
+        this.streamAsync = b;
+        return this;
+    }
+
+    /** 上游一个 chunk 都不给就结束 (空流). */
+    public FakeLlmProvider streamSilent(boolean b) {
+        this.streamSilent = b;
         return this;
     }
 
