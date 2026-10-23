@@ -27,6 +27,8 @@ public class ApiKeyService implements InitializingBean {
 
     private final GatewayProperties properties;
     private final ConcurrentHashMap<String, ApiKey> activeKeys = new ConcurrentHashMap<>();
+    /** 运行期注册的 key (平台 AK 桥接); reload() 只清配置 key, 这批要存活. */
+    private final ConcurrentHashMap<String, ApiKey> runtimeKeys = new ConcurrentHashMap<>();
 
     public ApiKeyService(GatewayProperties properties) {
         this.properties = properties;
@@ -39,19 +41,52 @@ public class ApiKeyService implements InitializingBean {
 
     public synchronized void reload() {
         activeKeys.clear();
-        if (properties.getApiKeys() == null) {
-            log.info("ApiKeyService loaded active keys: 0 (apiKeys null)");
-            return;
-        }
-        for (ApiKey k : properties.getApiKeys()) {
-            if (k.getKey() == null || k.getKey().isEmpty()) continue;
-            if (!"active".equalsIgnoreCase(k.getStatus())) continue;
-            if (k.getId() == null || k.getId().isEmpty()) {
-                k.setId(propertyKeyId(k));
+        if (properties.getApiKeys() != null) {
+            for (ApiKey k : properties.getApiKeys()) {
+                if (k.getKey() == null || k.getKey().isEmpty()) continue;
+                if (!"active".equalsIgnoreCase(k.getStatus())) continue;
+                if (k.getId() == null || k.getId().isEmpty()) {
+                    k.setId(propertyKeyId(k));
+                }
+                activeKeys.put(k.getKey(), k);
             }
-            activeKeys.put(k.getKey(), k);
         }
-        log.info("ApiKeyService loaded active keys: {}", activeKeys.size());
+        // reload 只管配置面; 运行期注册的 key (平台 AK) 不受配置刷新影响
+        activeKeys.putAll(runtimeKeys);
+        log.info("ApiKeyService loaded active keys: {} (config {}, runtime {})",
+                activeKeys.size(),
+                properties.getApiKeys() == null ? 0 : properties.getApiKeys().size(),
+                runtimeKeys.size());
+    }
+
+    /**
+     * 运行期注册一把 key (平台 AK 桥接: z-agent 建的 AK 要能直接调网关).
+     * 同一 secret 再注册时覆盖旧条目; 返回是否生效 (disabled 的 key 不注册).
+     */
+    public synchronized boolean register(ApiKey k) {
+        if (k == null || k.getKey() == null || k.getKey().isEmpty()) {
+            return false;
+        }
+        if (k.getStatus() != null && !"active".equalsIgnoreCase(k.getStatus())) {
+            unregister(k.getKey());
+            return false;
+        }
+        if (k.getId() == null || k.getId().isEmpty()) {
+            k.setId(propertyKeyId(k));
+        }
+        runtimeKeys.put(k.getKey(), k);
+        activeKeys.put(k.getKey(), k);
+        return true;
+    }
+
+    /** 按 secret 注销; 返回是否真的移除了条目. */
+    public synchronized boolean unregister(String secret) {
+        if (secret == null || secret.isEmpty()) {
+            return false;
+        }
+        boolean removed = runtimeKeys.remove(secret) != null;
+        ApiKey gone = activeKeys.remove(secret);
+        return removed || gone != null;
     }
 
     /**
