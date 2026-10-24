@@ -15,10 +15,10 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 |------|-----|
 | **仓库** | `z-llm-gateway`（LLM Gateway，中心化协议面） |
 | **Maven 坐标** | `io.github.yuku123:z-llm-gateway`（聚合 pom）+ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` / `z-llm-gateway-admin` |
-| **当前版本** | `0.1.8`（根 POM `<revision>`，CI-friendly versions + 常开 `flatten-maven-plugin`（`oss` 模式，剥 parent）） |
+| **当前版本** | `0.1.9`（根 POM `<revision>`，CI-friendly versions + 常开 `flatten-maven-plugin`（`oss` 模式，剥 parent）） |
 | **父项目** | `io.github.yuku123:z-boot-parent:1.1.0`（`<relativePath/>` 留空，parent 在 repo1 不在磁盘；2026-09-29 从"无 parent 自包含"迁过来，版本键由 12 格收到 9 格） |
 | **Maven Central** | 已发布并实测（2026-10-19 逐件 ranged GET）：`0.1.8` 的 `z-llm-gateway`（聚合，仅 pom）/ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` 全 200；**`z-llm-gateway-admin` 未发**（`0.1.7` 与 `0.1.8` 两版 pom 实测均 404）。`maven-metadata.xml` 的 `latest`/`release` 均为 `0.1.8`。改名前的旧坐标 `z-llm` / `z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` 只到 `0.1.7`（`0.1.8` 实测 404） |
-| **版本对齐** | 接入面 pin 现在在 `z-boot-parent`（`z-boot-fleet` 文件夹已退役）：`<z-llm.version>0.1.7</z-llm.version>`，**落后本仓 `<revision>0.1.8` 一格**——`z-boot-parent` 抬格后本仓这批坐标才会被消费方按 `0.1.8` 解析 |
+| **版本对齐** | 接入面 pin 现在在 `z-boot-parent`（`z-boot-fleet` 文件夹已退役）：`<z-llm.version>0.1.7</z-llm.version>`，**落后本仓 `<revision>0.1.9` 一格**——`z-boot-parent` 抬格后本仓这批坐标才会被消费方按 `0.1.7` 解析 |
 | **模块数** | 5（`z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` / `z-llm-gateway-admin`，全部在 reactor 里；`maven.deploy.skip` 命中 0 处，但 admin 仍**不在** Central 上） |
 | **默认端口** | 不适用 —— 本仓是库 + starter，**没有** bootable 主类、`application*.yml` 或 `server.port`（实测全仓 0 个 `application*` 文件）。端点挂在宿主应用的端口与 context-path 之下 |
 | **运行口径** | Java 8 · Spring Boot 2.7.18 · `javax.servlet` |
@@ -78,7 +78,7 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 
 ```
 z-llm-gateway/
-├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.1.0，<revision>=0.1.8 单一真源，常开 oss flatten
+├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.1.0，<revision>=0.1.9 单一真源，常开 oss flatten
 ├── LICENSE                # MIT
 ├── z-llm-gateway-api/             # DTO + Vendor 枚举 + GatewayException（只依赖 jackson-annotations，无 Spring）
 ├── z-llm-gateway-core/            # 网关核心：controller / mapper / router / registry / resilience / service / usage / upstream
@@ -147,7 +147,7 @@ POM 实测到的两条路，本仓不替你选：
 | 入口 | POM 里实际写了什么 | 结论 |
 |------|--------------------|------|
 | `io.github.yuku123:z-llm-gateway-starter` | 由本仓发布，版本随 `<revision>` / fleet 表 | 精确控版的直连口。`z-boot-starter-web` 之类容器**不会**被它带进来，宿主自备 |
-| `io.github.yuku123:z-boot-llm-starter` | 位于 `z-boot/z-boot-integration-starters/`，`<dependencies>` 只有 `z-llm-gateway-starter` 一支且不带 version，版本吃 `z-boot-parent` 自身的 `<z-llm.version>`（现读 **0.1.7**，仍落后本仓 `0.1.8` 一格） | 一行 import 的聚合口，等价于上面，但版本要等 parent 抬格才跟上 |
+| `io.github.yuku123:z-boot-llm-starter` | 位于 `z-boot/z-boot-integration-starters/`，`<dependencies>` 只有 `z-llm-gateway-starter` 一支且不带 version，版本吃 `z-boot-parent` 自身的 `<z-llm.version>`（现读 **0.1.7**，仍落后本仓 `0.1.9` 一格） | 一行 import 的聚合口，等价于上面，但版本要等 parent 抬格才跟上 |
 
 真实消费方是怎么选的（读它们的 POM）：`z-opc/bootstraps/z-opc-main-starter/pom.xml` 在 2026-09-24
 起**绕开** `z-boot-llm-starter`、直引 `z-llm-gateway-starter`，注释写的原因是"聚合那版锁的 z-llm 落后"；
@@ -449,14 +449,14 @@ mvn -B test                          # 全 reactor
 `-am` 不是可省的：不带它时 `z-llm-gateway-api` 会从本地 m2 解析到已发布的旧 jar，新增的 DTO 直接
 `NoClassDefFoundError`。改过 `z-llm-gateway-api` 后要让消费方看到，需要 `mvn install`。
 
-静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`）：`z-llm-gateway-core` 161 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 2。
+静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`）：`z-llm-gateway-core` 162 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 2。
 下表是同日全 reactor 跑通的 surefire 读数——两个数一个是静态计数、一个是运行汇总，
 口径不同，不要互相校正（`ProviderInvokerBudgetTest` 的 6 个方法与静态计数一致，
 差额来自 `@ParameterizedTest` 一类不由 `@Test` 计数的用法）：
 
 | 模块 | Tests | Failures | Errors | Skipped |
 | --- | --- | --- | --- | --- |
-| `z-llm-gateway-core` | 161 | 0 | 0 | 5 |
+| `z-llm-gateway-core` | 162 | 0 | 0 | 5 |
 | `z-llm-gateway-starter` | 2 | 0 | 0 | 0 |
 | `z-llm-gateway-admin` | 2 | 0 | 0 | 0 |
 

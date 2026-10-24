@@ -31,6 +31,7 @@ public class FakeLlmProvider implements LlmProvider {
     private List<String> streamTexts = Arrays.asList("he", "llo");
     private String streamFinishReason = "stop";
     private boolean streamSetsUsage = true;
+    private boolean streamUsageInTrailingChunk = false;
     private boolean streamAsync = false;
     private boolean streamSilent = false;
     private Consumer<ChatCompletionsRequest> onReceive;
@@ -134,6 +135,18 @@ public class FakeLlmProvider implements LlmProvider {
                     Arrays.asList(new ChatCompletionsResponse.Choice(0, text, null, null)),
                     null, null, Collections.emptyMap()));
         }
+        if (streamUsageInTrailingChunk) {
+            // 真实 OpenAI 兼容上游的形状: 先给 finish_reason 的内容片, **再**给一个
+            // choices 为空、只带 usage 的计量片. 网关若在 finish_reason 上就收尾,
+            // 计量片会落在 [DONE] 之后 ⇒ 客户端永远拿不到 usage.
+            onChunk.accept(new ChatCompletionsResponse("cmpl-s", request.getModel(),
+                    Arrays.asList(new ChatCompletionsResponse.Choice(0, "", null, streamFinishReason)),
+                    null, streamFinishReason, Collections.emptyMap()));
+            onChunk.accept(new ChatCompletionsResponse("cmpl-s", request.getModel(),
+                    Collections.<ChatCompletionsResponse.Choice>emptyList(),
+                    streamSetsUsage ? usage : null, null, Collections.emptyMap()));
+            return;
+        }
         onChunk.accept(new ChatCompletionsResponse("cmpl-s", request.getModel(),
                 Arrays.asList(new ChatCompletionsResponse.Choice(0, "", null, streamFinishReason)),
                 streamSetsUsage ? usage : null, streamFinishReason, Collections.emptyMap()));
@@ -190,6 +203,12 @@ public class FakeLlmProvider implements LlmProvider {
 
     public FakeLlmProvider streamSetsUsage(boolean b) {
         this.streamSetsUsage = b;
+        return this;
+    }
+
+    /** 复刻真实上游: usage 放在 finish_reason 之后的**独立计量片**里. */
+    public FakeLlmProvider streamUsageInTrailingChunk(boolean b) {
+        this.streamUsageInTrailingChunk = b;
         return this;
     }
 

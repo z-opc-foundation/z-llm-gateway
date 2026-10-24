@@ -202,6 +202,39 @@ public class ChatGatewayService {
     }
 
     /**
+     * 上游给 finish_reason 之后, 还允许计量块 (usage chunk) 在多久内到达.
+     * <p>OpenAI 兼容上游的末片顺序是: 带 finish_reason 的内容片 → 空 choices + usage 的计量片。
+     * 计量片若在收尾之后才到, 客户端按 SSE 协议读到 [DONE] 就停 ⇒ 用量丢失。
+     */
+    private static final long STREAM_FINISH_GRACE_MILLIS = 3000L;
+
+    /** 等待上游流真正结束; true = 上游给了结束信号, false = grace/超时兜底. */
+    private boolean awaitStreamEnd(java.util.concurrent.CountDownLatch latch,
+                                  java.util.concurrent.atomic.AtomicBoolean sawFinishReason)
+            throws InterruptedException {
+        long deadline = System.currentTimeMillis() + streamWaitMillis();
+        long graceDeadline = Long.MAX_VALUE;
+        while (true) {
+            long now = System.currentTimeMillis();
+            if (now >= deadline) {
+                return false;
+            }
+            if (sawFinishReason.get() && graceDeadline == Long.MAX_VALUE) {
+                graceDeadline = now + STREAM_FINISH_GRACE_MILLIS;
+            }
+            long limit = (graceDeadline == Long.MAX_VALUE) ? deadline : Math.min(deadline, graceDeadline);
+            long waitMs = Math.min(limit - now, 200L);
+            if (waitMs <= 0) {
+                // grace 用尽: 上游既没结束也没再给块 ⇒ 兜底收尾, 不让客户端干等读超时.
+                return false;
+            }
+            if (latch.await(waitMs, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                return true;
+            }
+        }
+    }
+
+    /**
      * 流式 chat. 每个增量 chunk 通过 onChunk 吐给下游.
      *
      * <p>与同步版的差别: 只能在"还没吐出任何 chunk"时安全换凭据, 一旦向客户端吐过内容
@@ -226,6 +259,8 @@ public class ChatGatewayService {
 
         final AtomicBoolean finished = new AtomicBoolean(false);
         final AtomicBoolean emitted = new AtomicBoolean(false);
+        /** 上游是否已给 finish_reason (只作信号, 不作收尾判据 —— 计量块还在后面). */
+        final AtomicBoolean sawFinishReason = new AtomicBoolean(false);
         final long[] usage = new long[3]; // prompt, completion, seen(flag)
         final String[] modelName = new String[1];
         final int[] chunkCount = new int[1];
@@ -274,7 +309,15 @@ public class ChatGatewayService {
                             onChunk.accept(fromKernelChunk(chunk, resolved));
                             String fr = chunkFinishReason(chunk);
                             if (fr != null) {
-                                finish.run();
+                                // 上游给 finish_reason 之后**还会再发一个 usage 计量块**
+                                // (OpenAI 协议: 请求带 stream_options.include_usage 时,
+                                //  末片 choices 为空、只带 usage)。
+                                // 此前在这里直接 finish() ⇒ [DONE] 写在计量块**前面** ⇒
+                                // 客户端按 SSE 协议读到 [DONE] 就收流 ⇒ 永远拿不到 usage ⇒
+                                // 流式用量对外恒为 0。
+                                // ⇒ 这里只记信号; 收尾交给「上游流真正结束」(provider onComplete),
+                                //   上游不给结束信号时由 grace 窗口兜底。
+                                sawFinishReason.set(true);
                             }
                         },
                         // 上游的失败是通过 onError 回调报出来的 (provider 不抛异常),
@@ -284,8 +327,10 @@ public class ChatGatewayService {
                             attemptDone.countDown();
                         },
                         attemptDone::countDown);
-                // 等流真的结束(上游关闭 / 出错), 不能凭 provider 方法返回就判成功
-                attemptDone.await(streamWaitMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+                // 等流真的结束(上游关闭 / 出错), 不能凭 provider 方法返回就判成功。
+                // 上游已给 finish_reason 时只给一小段 grace: 计量块通常紧跟其后到达;
+                // 上游真的不给结束信号 ⇒ grace 用尽后兜底收尾(否则客户端要干等到读超时)。
+                awaitStreamEnd(attemptDone, sawFinishReason);
             } catch (Throwable t) {
                 asyncError[0] = t;
             }

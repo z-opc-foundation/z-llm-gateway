@@ -220,6 +220,25 @@ public class ChatGatewayServiceTest {
         assertEquals(30L, out.usage().promptTokens());
     }
 
+    /**
+     * 回归: 真实 OpenAI 兼容上游的 usage 计量片落在 finish_reason **之后**
+     * (末片 choices 为空、只带 usage)。
+     * 网关若在 finish_reason 上就收尾 ⇒ [DONE] 写在计量片前面 ⇒ 客户端按 SSE 协议读到
+     * [DONE] 就停 ⇒ 流式用量对外恒为 0 (智能板块「模型对话」的输入/输出计数全是 0)。
+     */
+    @Test
+    public void trailingUsageChunkIsDeliveredBeforeCompletion() {
+        openai.streamTexts("a").streamUsageInTrailingChunk(true)
+                .usage(new TokenUsage(30L, 12L, 42L)).streamSetsUsage(true);
+        List<String> events = new ArrayList<>();
+        service.streamChat(req("openai/gpt-4o", "hi"), key,
+                c -> events.add("chunk:" + (c.getUsage() == null ? "-" : String.valueOf(c.getUsage().getTotalTokens()))),
+                e -> fail("unexpected error " + e),
+                () -> events.add("done"));
+        assertEquals("done", events.get(events.size() - 1));
+        assertTrue("计量片必须在收尾之前送达: " + events, events.contains("chunk:42"));
+    }
+
     @Test
     public void streamWithNoUsageRecordsZeroWithoutCrashing() {
         openai.streamTexts("hey").streamSetsUsage(false);
