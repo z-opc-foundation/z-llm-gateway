@@ -1,10 +1,9 @@
 /** LLM 模型管理：/llm-center/model CRUD。 */
 import {useEffect, useState} from 'react'
-import {Button, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Table, Tag, Typography} from 'antd'
+import {Button, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Tag} from 'antd'
 import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined} from '@ant-design/icons'
+import {ListTable} from '@yuku123/z-frontend-common/ui'
 import {llmApi} from '../services/api'
-
-const {Title, Paragraph} = Typography
 
 export default function Model() {
     const [rows, setRows] = useState([])
@@ -79,14 +78,23 @@ export default function Model() {
 
     return (
         <div>
-            <Space style={{marginBottom: 16}}>
-                <Title level={4} style={{margin: 0}}>LLM 模型</Title>
-                <Button icon={<ReloadOutlined/>} onClick={fetch} loading={loading}>刷新</Button>
-                <Button type="primary" icon={<PlusOutlined/>} onClick={openNew}>新增</Button>
-            </Space>
-            <Paragraph type="secondary">/llm-center/model/*：挂到供应商底下的具体模型定义。</Paragraph>
-
-            <Table rowKey="id" dataSource={rows} columns={columns} loading={loading} size="small" pagination={false}/>
+            <ListTable
+                rows={rows}
+                columns={columns}
+                rowKey="id"
+                loading={loading}
+                cardTitle="LLM 模型"
+                searchKeys="modelName,modelCode"
+                searchPlaceholder="按模型名 / 编码过滤"
+                emptyTitle="暂无模型"
+                emptyDescription="还没有定义任何模型，点「新增」把模型挂到供应商下"
+                cardExtra={
+                    <Space size="small">
+                        <Button icon={<ReloadOutlined/>} onClick={fetch} loading={loading}>刷新</Button>
+                        <Button type="primary" icon={<PlusOutlined/>} onClick={openNew}>新增</Button>
+                    </Space>
+                }
+            />
 
             <Modal title={editing?.id ? '编辑模型' : '新增模型'} open={!!editing} onCancel={() => setEditing(null)}
                    onOk={onSubmit} width={600} destroyOnClose>

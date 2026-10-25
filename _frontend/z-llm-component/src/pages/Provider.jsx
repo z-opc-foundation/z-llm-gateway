@@ -1,10 +1,9 @@
 /** LLM 供应商管理：/llm-center/provider CRUD。 */
 import {useEffect, useState} from 'react'
-import {Button, Form, Input, message, Modal, Popconfirm, Select, Space, Table, Tag, Typography} from 'antd'
+import {Button, Form, Input, message, Modal, Popconfirm, Select, Space, Tag} from 'antd'
 import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined} from '@ant-design/icons'
+import {ListTable} from '@yuku123/z-frontend-common/ui'
 import {llmApi} from '../services/api'
-
-const {Title, Paragraph} = Typography
 
 export default function Provider() {
     const [rows, setRows] = useState([])
@@ -71,14 +70,23 @@ export default function Provider() {
 
     return (
         <div>
-            <Space style={{marginBottom: 16}}>
-                <Title level={4} style={{margin: 0}}>LLM 供应商</Title>
-                <Button icon={<ReloadOutlined/>} onClick={fetch} loading={loading}>刷新</Button>
-                <Button type="primary" icon={<PlusOutlined/>} onClick={openNew}>新增</Button>
-            </Space>
-            <Paragraph type="secondary">/llm-center/provider/*：API 网关型供应商接入配置（OpenAI 兼容协议为主）。</Paragraph>
-
-            <Table rowKey="id" dataSource={rows} columns={columns} loading={loading} size="small" pagination={false}/>
+            <ListTable
+                rows={rows}
+                columns={columns}
+                rowKey="id"
+                loading={loading}
+                cardTitle="LLM 供应商"
+                searchKeys="providerName,providerCode,baseUrl"
+                searchPlaceholder="按名称 / 编码 / Base URL 过滤"
+                emptyTitle="暂无供应商"
+                emptyDescription="还没有接入任何 API 网关型供应商，点「新增」接入第一个"
+                cardExtra={
+                    <Space size="small">
+                        <Button icon={<ReloadOutlined/>} onClick={fetch} loading={loading}>刷新</Button>
+                        <Button type="primary" icon={<PlusOutlined/>} onClick={openNew}>新增</Button>
+                    </Space>
+                }
+            />
 
             <Modal title={editing?.id ? '编辑供应商' : '新增供应商'} open={!!editing} onCancel={() => setEditing(null)}
                    onOk={onSubmit} width={600} destroyOnClose>
