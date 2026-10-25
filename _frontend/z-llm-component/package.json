@@ -1,6 +1,6 @@
 {
   "name": "@yuku123/z-llm-component",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "z-llm 可复用前端组件：LLM 中心（供应商/模型 CRUD；lead 005 §9）",
   "type": "module",
   "main": "./dist/index.js",
