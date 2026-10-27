@@ -2,13 +2,15 @@
 import {useEffect, useState} from 'react'
 import {Button, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Tag} from 'antd'
 import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined} from '@ant-design/icons'
-import {ListTable} from '@yuku123/z-frontend-common/ui'
+import {ErrorState, ListTable} from '@yuku123/z-frontend-common/ui'
 import {llmApi} from '../services/api'
 
 export default function Model() {
     const [rows, setRows] = useState([])
     const [providers, setProviders] = useState([])
     const [loading, setLoading] = useState(false)
+    // lead 008 §17：读失败常驻报错 + 重试，避免空表被误读成“没有数据”。
+    const [loadError, setLoadError] = useState(null)
     const [editing, setEditing] = useState(null)
     const [form] = Form.useForm()
 
@@ -20,8 +22,9 @@ export default function Model() {
             const pList = Array.isArray(p) ? p : (p?.data || [])
             setRows(mList)
             setProviders(pList)
+            setLoadError(null)
         } catch (e) {
-            message.error(e?.message || '加载失败')
+            setLoadError(e)
         } finally { setLoading(false) }
     }
     useEffect(() => { fetch() }, [])
@@ -78,6 +81,15 @@ export default function Model() {
 
     return (
         <div>
+            {loadError && (
+                <ErrorState
+                    error={loadError}
+                    title="LLM 模型没有读到"
+                    description="接口没有返回数据，下方空表不代表真的没有数据。"
+                    onRetry={fetch}
+                    style={{marginBottom: 16}}
+                />
+            )}
             <ListTable
                 rows={rows}
                 columns={columns}
@@ -86,8 +98,8 @@ export default function Model() {
                 cardTitle="LLM 模型"
                 searchKeys="modelName,modelCode"
                 searchPlaceholder="按模型名 / 编码过滤"
-                emptyTitle="暂无模型"
-                emptyDescription="还没有定义任何模型，点「新增」把模型挂到供应商下"
+                emptyTitle={loadError ? '数据没有读到' : '暂无模型'}
+                emptyDescription={loadError ? '上方错误条已说明原因，点「重新加载」重试。' : '还没有定义任何模型，点「新增」把模型挂到供应商下'}
                 cardExtra={
                     <Space size="small">
                         <Button icon={<ReloadOutlined/>} onClick={fetch} loading={loading}>刷新</Button>

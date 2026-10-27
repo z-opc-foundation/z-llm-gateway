@@ -2,12 +2,14 @@
 import {useEffect, useState} from 'react'
 import {Button, Form, Input, message, Modal, Popconfirm, Select, Space, Tag} from 'antd'
 import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined} from '@ant-design/icons'
-import {ListTable} from '@yuku123/z-frontend-common/ui'
+import {ErrorState, ListTable} from '@yuku123/z-frontend-common/ui'
 import {llmApi} from '../services/api'
 
 export default function Provider() {
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
+    // lead 008 §17：读失败常驻报错 + 重试，避免空表被误读成“没有数据”。
+    const [loadError, setLoadError] = useState(null)
     const [editing, setEditing] = useState(null) // null | {} 新增 | row 编辑
     const [form] = Form.useForm()
 
@@ -17,8 +19,9 @@ export default function Provider() {
             const res = await llmApi.providerList()
             const list = Array.isArray(res) ? res : (res?.data || [])
             setRows(list)
+            setLoadError(null)
         } catch (e) {
-            message.error(e?.message || '加载失败')
+            setLoadError(e)
         } finally { setLoading(false) }
     }
     useEffect(() => { fetch() }, [])
@@ -70,6 +73,15 @@ export default function Provider() {
 
     return (
         <div>
+            {loadError && (
+                <ErrorState
+                    error={loadError}
+                    title="LLM 供应商没有读到"
+                    description="接口没有返回数据，下方空表不代表真的没有数据。"
+                    onRetry={fetch}
+                    style={{marginBottom: 16}}
+                />
+            )}
             <ListTable
                 rows={rows}
                 columns={columns}
@@ -78,8 +90,8 @@ export default function Provider() {
                 cardTitle="LLM 供应商"
                 searchKeys="providerName,providerCode,baseUrl"
                 searchPlaceholder="按名称 / 编码 / Base URL 过滤"
-                emptyTitle="暂无供应商"
-                emptyDescription="还没有接入任何 API 网关型供应商，点「新增」接入第一个"
+                emptyTitle={loadError ? '数据没有读到' : '暂无供应商'}
+                emptyDescription={loadError ? '上方错误条已说明原因，点「重新加载」重试。' : '还没有接入任何 API 网关型供应商，点「新增」接入第一个'}
                 cardExtra={
                     <Space size="small">
                         <Button icon={<ReloadOutlined/>} onClick={fetch} loading={loading}>刷新</Button>
