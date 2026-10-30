@@ -16,12 +16,12 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 | **仓库** | `z-llm-gateway`（LLM Gateway，中心化协议面） |
 | **Maven 坐标** | `io.github.yuku123:z-llm-gateway`（聚合 pom）+ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` / `z-llm-gateway-admin` |
 | **当前版本** | `0.1.9`（根 POM `<revision>`，CI-friendly versions + 常开 `flatten-maven-plugin`（`oss` 模式，剥 parent）） |
-| **父项目** | `io.github.yuku123:z-boot-parent:1.1.0`（`<relativePath/>` 留空，parent 在 repo1 不在磁盘；2026-09-29 从"无 parent 自包含"迁过来，版本键由 12 格收到 9 格） |
+| **父项目** | `io.github.yuku123:z-boot-parent:1.2.0`（`<relativePath/>` 留空，parent 在 repo1 不在磁盘；2026-09-29 从"无 parent 自包含"迁过来，版本键由 12 格收到 9 格） |
 | **Maven Central** | 已发布并实测（2026-10-24 逐件 ranged GET）：`0.1.9` 的 `z-llm-gateway`（聚合，仅 pom）/ `z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` 全 200；**`z-llm-gateway-admin` 未发**（`0.1.7` / `0.1.8` / `0.1.9` 三版 pom 实测均 404）。`maven-metadata.xml` 的 `latest`/`release` 均为 `0.1.9`。改名前的旧坐标 `z-llm` / `z-llm-api` / `z-llm-core` / `z-llm-starter` / `z-llm-admin` 只到 `0.1.7`（`0.1.8` 起实测 404） |
 | **版本对齐** | 接入面 pin 现在在 `z-boot-parent`（`z-boot-fleet` 文件夹已退役）：`<z-llm.version>0.1.7</z-llm.version>`，**落后本仓 `<revision>0.1.9` 一格**——`z-boot-parent` 抬格后本仓这批坐标才会被消费方按 `0.1.7` 解析 |
 | **模块数** | 5（`z-llm-gateway-api` / `z-llm-gateway-core` / `z-llm-gateway-starter` / `z-llm-gateway-config` / `z-llm-gateway-admin`，全部在 reactor 里；`maven.deploy.skip` 命中 0 处，但 admin 仍**不在** Central 上） |
 | **默认端口** | 不适用 —— 本仓是库 + starter，**没有** bootable 主类、`application*.yml` 或 `server.port`（实测全仓 0 个 `application*` 文件）。端点挂在宿主应用的端口与 context-path 之下 |
-| **运行口径** | Java 8 · Spring Boot 2.7.18 · `javax.servlet` |
+| **运行口径** | Java 17 · Spring Boot 3.3.13 · `javax.servlet` |
 | **配置前缀** | `z.llm`（`GatewayProperties`），总开关 `z.llm.enabled` |
 | **最近更新** | 2026-09-30 |
 
@@ -78,7 +78,7 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 
 ```
 z-llm-gateway/
-├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.1.0，<revision>=0.1.9 单一真源，常开 oss flatten
+├── pom.xml                # 聚合 POM：继承 z-boot-parent:1.2.0，<revision>=0.1.9 单一真源，常开 oss flatten
 ├── LICENSE                # MIT
 ├── z-llm-gateway-api/             # DTO + Vendor 枚举 + GatewayException（只依赖 jackson-annotations，无 Spring）
 ├── z-llm-gateway-core/            # 网关核心：controller / mapper / router / registry / resilience / service / usage / upstream
@@ -112,7 +112,7 @@ z-llm-gateway/
 
 | 层级 | 技术 |
 |------|------|
-| 语言 / 运行时 | Java 8（`maven.compiler.source/target=8` 由 `z-boot-parent` 下发） |
+| 语言 / 运行时 | Java 17（`maven.compiler.source/target=17` 由 `z-boot-parent` 下发） |
 | 框架 | Spring Boot 2.7.18（版本由 `z-boot-parent` 自带地板供给，本仓不再 import Boot BOM） |
 | Web 层 | `spring-web` / `spring-webmvc` 5.3.39，SSE 用手写 `PrintWriter`；Servlet API 锁 `javax.servlet-api` 4.0.1 |
 | JSON | `jackson-databind` / `jackson-core` 2.18.6（`z-llm-gateway-api` 只用 `jackson-annotations` 把 DTO 钉成 OpenAI 线格式） |
@@ -137,7 +137,7 @@ z-llm-gateway/
 mvn clean install -DskipTests
 ```
 
-构建要求 parent 可解析：`io.github.yuku123:z-boot-parent:1.1.0`（repo1 实测 pom 200）。
+构建要求 parent 可解析：`io.github.yuku123:z-boot-parent:1.2.0`（repo1 实测 pom 200）。
 第三方版本一律走父链（地板 + fleet），模块 POM 里不该再出现字面版本钉。
 
 ### 消费入口：直引 `z-llm-gateway-starter`，还是走聚合 starter

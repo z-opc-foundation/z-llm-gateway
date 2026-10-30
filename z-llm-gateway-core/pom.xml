@@ -95,8 +95,8 @@
 
         <!-- Jakarta Servlet API (Spring Boot 2.7 用 javax, 但 spring-web 5 已部分 jakarta, 锁定 javax) -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 
         <!-- JSON 编解码: 网关自身一律走 z-util 的 JsonUtil / JsonCursor。

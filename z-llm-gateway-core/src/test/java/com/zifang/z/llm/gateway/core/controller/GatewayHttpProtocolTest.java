@@ -786,9 +786,13 @@ public class GatewayHttpProtocolTest {
 
         MvcResult r404 = openaiMvc.perform(get("/v1/nope").header("Authorization", AUTH)).andReturn();
         assertEquals("未知路径状态码", 404, r404.getResponse().getStatus());
-        assertNull("未知路径在这一层根本不抛异常（所以谈不上谁接得住它）",
-                r404.getResolvedException());
-        assertEquals("未知路径没有错误信封", "", r404.getResponse().getContentAsString());
+        // 2026-10-30 SB3 火车：Spring Framework 6.2/Boot 3.2 起 DispatcherServlet 默认
+        // throwExceptionIfNoHandlerFound=true，未知路径改抛 NoHandlerFoundException（仍由默认
+        // 解析器落成 404）—— 断言从「不抛异常」改为「抛的就是它」，包级 advice 依旧接不到。
+        assertTrue("未知路径应抛 NoHandlerFoundException（SB3 默认行为）",
+                r404.getResolvedException() instanceof org.springframework.web.servlet.NoHandlerFoundException);
+        assertFalse("未知路径不得被包级 advice 接成自定义信封",
+                r404.getResponse().getContentAsString().contains(MAPPING_MARKER));
     }
 
     /** @param wrongContentType true 走 415（Content-Type 不对），false 走 405（方法不对）. */

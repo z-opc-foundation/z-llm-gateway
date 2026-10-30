@@ -4,7 +4,7 @@ import com.zifang.z.llm.gateway.api.dto.ApiKey;
 import com.zifang.z.llm.gateway.api.exception.GatewayException;
 import org.springframework.http.HttpHeaders;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * HTTP Authorization header → ApiKey 提取.
