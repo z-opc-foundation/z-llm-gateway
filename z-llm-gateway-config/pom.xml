@@ -15,13 +15,14 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <name>z-llm-gateway-config (DB-backed Provider / Model / ToolTemplate CRUD)</name>
+    <name>z-llm-gateway :: config</name>
     <description>
         配置面板 — z_llm_provider / z_llm_model / z_agent_tool_template 三张表的
         DB-backed CRUD (LlmProvider / LlmModel / AgentToolTemplate entity + mapper +
         service + REST controller)。
         替代 z-opc 内 z-agent-llm-center（已删除）的 Provider/Model/ToolTemplate
         配置面板功能。
+        DB-backed Provider / Model / ToolTemplate CRUD
     </description>
 
     <url>https://github.com/z-opc-foundation/z-llm-gateway</url>

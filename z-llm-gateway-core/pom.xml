@@ -15,8 +15,8 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <name>z-llm-gateway-core (Gateway)</name>
-    <description>HTTP 网关核心 — 双协议适配 (OpenAI/Anthropic) + AK 保管 + Provider 注册 + 计量/限流</description>
+    <name>z-llm-gateway :: core</name>
+    <description>HTTP 网关核心 — 双协议适配 (OpenAI/Anthropic) + AK 保管 + Provider 注册 + 计量/限流 / Gateway</description>
 
     <!-- 本模块原先自带 maven.compiler.source/target=8 与 project.build.sourceEncoding=UTF-8 三格，
          与父链（z-boot-parent 的 <properties>，面值与行号见根 pom 注释）逐字节相同 ⇒ 随迁移删掉，

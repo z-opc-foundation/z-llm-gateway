@@ -39,8 +39,8 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
 
-    <name>z-llm-gateway (LLM Gateway)</name>
-    <description>中心化 LLM 网关, 暴露 OpenAI/Anthropic 标准协议, 后端 6 vendor provider 通过 z-agent-kernel-llm 调用</description>
+    <name>z-llm-gateway :: root</name>
+    <description>中心化 LLM 网关, 暴露 OpenAI/Anthropic 标准协议, 后端 6 vendor provider 通过 z-agent-kernel-llm 调用 / LLM Gateway</description>
     <url>https://github.com/z-opc-foundation/z-llm-gateway</url>
 
     <licenses>
