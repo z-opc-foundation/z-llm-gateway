@@ -455,7 +455,7 @@ mvn -B test                          # 全 reactor
 `-am` 不是可省的：不带它时 `z-llm-gateway-api` 会从本地 m2 解析到已发布的旧 jar，新增的 DTO 直接
 `NoClassDefFoundError`。改过 `z-llm-gateway-api` 后要让消费方看到，需要 `mvn install`。
 
-静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`）：`z-llm-gateway-core` 181 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 8。
+静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`；2026-11-09 增加 `ApiKeyTenantIsolationTest` 后 core 由 181 → 191）：`z-llm-gateway-core` 191 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 8。
 下表是同日全 reactor 跑通的 surefire 读数——两个数一个是静态计数、一个是运行汇总，
 口径不同，不要互相校正（`ProviderInvokerBudgetTest` 的 6 个方法与静态计数一致，
 差额来自 `@ParameterizedTest` 一类不由 `@Test` 计数的用法）：

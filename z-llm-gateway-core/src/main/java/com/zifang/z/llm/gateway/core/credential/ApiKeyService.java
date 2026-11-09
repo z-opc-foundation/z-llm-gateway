@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
  * API Key 校验服务 — 由网关签发/管理的接入凭证.
  *
@@ -259,6 +261,61 @@ public class ApiKeyService implements InitializingBean {
     public List<ApiKey> list() {
         return java.util.Collections.unmodifiableList(
                 new java.util.ArrayList<>(activeKeys.values()));
+    }
+
+    /**
+     * 租户隔离强制点: 鉴权拿到 key 后调用 (从请求头取租户).
+     *
+     * <p>语义: 仅当 {@code z.llm.tenant-isolation-enabled=true} 且该 key 绑定了非空
+     * {@code tenantCode} 时生效 —— 请求 {@code Tenant-Code} 头缺失或与 key 绑定的租户
+     * 不一致 ⇒ 403 forbidden. 平台级 key (未绑定租户) 或未开启隔离时放行 (向后兼容).
+     *
+     * <p>返回 key 本身便于链式/断言; 异常走 {@link GatewayException#forbidden}.
+     */
+    public ApiKey enforceTenant(HttpServletRequest req, ApiKey key) {
+        if (req == null) {
+            return key;
+        }
+        return enforceTenant(req.getHeader(properties.getTenantHeader()), key);
+    }
+
+    /** 租户隔离强制点的字符串重载 (供测试/非 servlet 链路直接按其租户判定). */
+    public ApiKey enforceTenant(String requestTenantCode, ApiKey key) {
+        if (key == null) {
+            return null;
+        }
+        if (!properties.isTenantIsolationEnabled()) {
+            return key;
+        }
+        String bound = key.getTenantCode();
+        if (bound == null || bound.isEmpty()) {
+            return key;  // 平台级/通用 key, 不做租户绑定校验
+        }
+        if (requestTenantCode == null || requestTenantCode.trim().isEmpty()
+                || !bound.trim().equalsIgnoreCase(requestTenantCode.trim())) {
+            throw GatewayException.forbidden(
+                    "tenant mismatch: key is bound to tenant '" + bound
+                            + "', request Tenant-Code='" + requestTenantCode + "'");
+        }
+        return key;
+    }
+
+    /** 只校验不抛 (null 安全), 供 AccessControl/单测做布尔判定. */
+    public boolean allowedForTenant(String requestTenantCode, ApiKey key) {
+        if (key == null) {
+            return false;
+        }
+        if (!properties.isTenantIsolationEnabled()) {
+            return true;
+        }
+        String bound = key.getTenantCode();
+        if (bound == null || bound.isEmpty()) {
+            return true;
+        }
+        if (requestTenantCode == null || requestTenantCode.trim().isEmpty()) {
+            return false;
+        }
+        return bound.trim().equalsIgnoreCase(requestTenantCode.trim());
     }
 
     /** 按 keyId 查当前生效的 key (鉴权能命中的那批). 找不到返回 null. */

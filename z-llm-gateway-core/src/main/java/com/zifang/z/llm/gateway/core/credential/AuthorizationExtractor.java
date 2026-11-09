@@ -32,6 +32,22 @@ public final class AuthorizationExtractor {
         if (key == null) {
             throw GatewayException.unauthorized("Invalid API key");
         }
+        // 租户隔离: 开启且 key 绑定了租户时, 请求 Tenant-Code 必须一致 (否则 403).
+        service.enforceTenant(req, key);
         return key;
+    }
+
+    /**
+     * 从请求里读取租户隔离用的 {@code Tenant-Code} 头 (取不到返回 null).
+     *
+     * <p>租户隔离由 AccessControl.authorizeTenant 在鉴权时用它比对 key 绑定的租户.
+     */
+    public static String tenantCode(HttpServletRequest req, String tenantHeader) {
+        if (req == null) {
+            return null;
+        }
+        String name = (tenantHeader == null || tenantHeader.isEmpty()) ? "Tenant-Code" : tenantHeader;
+        String v = req.getHeader(name);
+        return (v == null || v.trim().isEmpty()) ? null : v.trim();
     }
 }

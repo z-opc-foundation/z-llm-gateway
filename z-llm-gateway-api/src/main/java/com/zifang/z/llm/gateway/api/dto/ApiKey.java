@@ -22,8 +22,21 @@ public class ApiKey {
     /** 脱敏后的 key (sk-***xxx, 仅展示). */
     private String maskedKey;
 
-    /** 关联租户/owner (未来接 z-ctc). */
+    /**
+     * 归属租户/owner (未来接 z-ctc 的租户编码).
+     *
+     * <p>这是网关<b>租户隔离</b>的基础维度: 绑定非空 {@code tenantCode} 的 key,
+     * 其请求的 {@code Tenant-Code} 头必须一致, 否则 403 (见 AccessControl.authorizeTenant).
+     * 为空表示平台级/通用 key, 不做租户绑定校验.
+     */
     private String ownerId;
+
+    /**
+     * 租户编码 (租户隔离 key 维度, 常与 ownerId 同值, 语义更清晰).
+     *
+     * <p>签发/配置时可显式绑定; 为空表示平台级 key, 不参与租户隔离匹配.
+     */
+    private String tenantCode;
 
     /** 状态: "active" / "disabled". */
     private String status;
@@ -92,6 +105,14 @@ public class ApiKey {
 
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public String getTenantCode() {
+        return tenantCode;
+    }
+
+    public void setTenantCode(String tenantCode) {
+        this.tenantCode = tenantCode;
     }
 
     public String getStatus() {

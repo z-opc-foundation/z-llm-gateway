@@ -69,6 +69,18 @@ public class GatewayProperties {
     /** 是否强制 ApiKey 的 allowedModels / allowedVendors 白名单. */
     private boolean enforceKeyRestrictions = true;
 
+    /**
+     * 是否启用<b>租户隔离</b> (请求 {@code Tenant-Code} 头维度).
+     *
+     * <p>开启后, 绑定 {@code tenantCode} 的 ApiKey 在鉴权时要求请求所声明的租户
+     * (默认头 {@code Tenant-Code}, 见 {@link #tenantHeader}) 与其一致, 否则 403.
+     * <p>未绑定租户的平台级 key 不受影响 (任意租户可调, 由外部网关/应用按需兜底).
+     */
+    private boolean tenantIsolationEnabled = false;
+
+    /** 租户隔离用到的请求头名 (默认 {@code Tenant-Code}, 与 z-team 惯例一致). */
+    private String tenantHeader = "Tenant-Code";
+
     /** 失败重试 / 凭据冷却. */
     @NestedConfigurationProperty
     private Retry retry = new Retry();
@@ -293,6 +305,22 @@ public class GatewayProperties {
 
     public void setEnforceKeyRestrictions(boolean enforceKeyRestrictions) {
         this.enforceKeyRestrictions = enforceKeyRestrictions;
+    }
+
+    public boolean isTenantIsolationEnabled() {
+        return tenantIsolationEnabled;
+    }
+
+    public void setTenantIsolationEnabled(boolean tenantIsolationEnabled) {
+        this.tenantIsolationEnabled = tenantIsolationEnabled;
+    }
+
+    public String getTenantHeader() {
+        return tenantHeader;
+    }
+
+    public void setTenantHeader(String tenantHeader) {
+        this.tenantHeader = tenantHeader == null ? "Tenant-Code" : tenantHeader;
     }
 
     public Retry getRetry() {

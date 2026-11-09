@@ -90,12 +90,22 @@ public class AdminController {
      * 不带鉴权的端点变成一张"可拿来调网关的全部凭证"清单.
      */
     @GetMapping("/api-keys")
-    public List<Map<String, Object>> apiKeys() {
+    public List<Map<String, Object>> apiKeys(
+            @org.springframework.web.bind.annotation.RequestParam(value = "tenant", required = false) String tenant) {
         List<Map<String, Object>> out = new ArrayList<>();
         for (ApiKey k : apiKeyService.list()) {
+            if (tenant != null && !tenant.isEmpty()
+                    && !tenant.equalsIgnoreCase(k.getTenantCode())) {
+                continue;
+            }
             out.add(maskedView(k));
         }
         return out;
+    }
+
+    /** 无参重载 (向后兼容: 直接调用/测试用), 等价于不带租户过滤的全量列表. */
+    public List<Map<String, Object>> apiKeys() {
+        return apiKeys((String) null);
     }
 
     /**
@@ -113,6 +123,12 @@ public class AdminController {
         ApiKey tpl = new ApiKey();
         tpl.setName(str(body.get("name")));
         tpl.setOwnerId(str(body.get("ownerId")));
+        // 租户隔离: 签发时可绑定租户 (tenantCode / ownerId 任一来源, 便于两种命名习惯).
+        String tenant = str(body.get("tenantCode"));
+        if (tenant == null) {
+            tenant = str(body.get("ownerId"));
+        }
+        tpl.setTenantCode(tenant);
         tpl.setQuota(toDouble(body.get("quota")));
         tpl.setAllowedModels(strList(body.get("allowedModels")));
         List<Vendor> vendors = strList(body.get("allowedVendors")).stream()
@@ -219,6 +235,7 @@ public class AdminController {
         m.put("id", k.getId());
         m.put("name", k.getName());
         m.put("ownerId", k.getOwnerId());
+        m.put("tenantCode", k.getTenantCode());
         m.put("status", k.getStatus());
         m.put("maskedKey", mask(k.getKey()));
         m.put("expiresAt", k.getExpiresAt());
@@ -263,8 +280,20 @@ public class AdminController {
      * 走 /z-llm/admin/* 且由 {@code z.llm.expose-admin=true} 门控, 与公网 /v1 隔离.
      */
     @GetMapping("/usage")
-    public Map<String, Object> usage() {
+    public Map<String, Object> usage(
+            @org.springframework.web.bind.annotation.RequestParam(value = "tenant", required = false) String tenant) {
+        if (tenant != null && !tenant.isEmpty()) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("tenant", usageLedger.snapshotByTenant(tenant));
+            out.put("totalCost", usageLedger.totalCostByTenant(tenant));
+            return out;
+        }
         return usageLedger.snapshot();
+    }
+
+    /** 无参重载 (向后兼容), 等价于全量 usage 快照. */
+    public Map<String, Object> usage() {
+        return usage((String) null);
     }
 
     @GetMapping("/health")

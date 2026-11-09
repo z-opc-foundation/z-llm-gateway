@@ -80,6 +80,8 @@ public class UsageLedger {
     private final ConcurrentHashMap<String, Bucket> byKey = new ConcurrentHashMap<>();
     /** "keyId|model" → bucket. */
     private final ConcurrentHashMap<String, Bucket> byKeyModel = new ConcurrentHashMap<>();
+    /** tenantCode → bucket (租户隔离: 运维按租户对账). */
+    private final ConcurrentHashMap<String, Bucket> byTenant = new ConcurrentHashMap<>();
 
     public UsageLedger(GatewayProperties properties) {
         this.properties = properties;
@@ -104,6 +106,10 @@ public class UsageLedger {
         Bucket b = bucket(byKey, key.getId());
         accumulate(b, p, c, cost, unpriced);
         accumulate(bucket(byKeyModel, key.getId() + "|" + canonical), p, c, cost, unpriced);
+        String tc = key.getTenantCode();
+        if (tc != null && !tc.isEmpty()) {
+            accumulate(bucket(byTenant, tc), p, c, cost, unpriced);
+        }
         return rec;
     }
 
@@ -143,14 +149,49 @@ public class UsageLedger {
             String[] split = e.getKey().split("\\|", 2);
             perModel.add(row(split[0], split.length > 1 ? split[1] : null, e.getValue()));
         }
+        List<Map<String, Object>> tenants = new ArrayList<>();
+        for (Map.Entry<String, Bucket> e : byTenant.entrySet()) {
+            Map<String, Object> t = new LinkedHashMap<>();
+            t.put("tenantCode", e.getKey());
+            t.putAll(row(e.getKey(), null, e.getValue()));
+            t.remove("keyId");
+            tenants.add(t);
+        }
         out.put("byKey", keys);
         out.put("byKeyModel", perModel);
+        out.put("byTenant", tenants);
         return out;
+    }
+
+    /** 指定租户的累计花费 (租户隔离对账用; 未开启租户计量的数据不可查). */
+    public double totalCostByTenant(String tenantCode) {
+        if (tenantCode == null || tenantCode.trim().isEmpty()) {
+            return 0d;
+        }
+        Bucket b = byTenant.get(tenantCode.trim());
+        return b == null ? 0d : b.cost.sum();
+    }
+
+    /** 租户维度快照: 返回该租户的累计请求/token/成本. 未开通的租户返回空 map. */
+    public Map<String, Object> snapshotByTenant(String tenantCode) {
+        if (tenantCode == null || tenantCode.trim().isEmpty()) {
+            return java.util.Collections.emptyMap();
+        }
+        Bucket b = byTenant.get(tenantCode.trim());
+        if (b == null) {
+            return java.util.Collections.emptyMap();
+        }
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("tenantCode", tenantCode.trim());
+        m.putAll(row(tenantCode.trim(), null, b));
+        m.remove("keyId");
+        return m;
     }
 
     public void reset() {
         byKey.clear();
         byKeyModel.clear();
+        byTenant.clear();
     }
 
     // ---- 私有 ----
