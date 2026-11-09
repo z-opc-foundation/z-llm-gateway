@@ -81,8 +81,11 @@
     <properties>
         <!-- 项目自身版本 -->
         <!-- 版本单一真源：抬号只改这一行（配下面常开的 oss flatten，入库/发布件里落成字面量）。
-             自家 5 个 reactor 坐标在 <dependencyManagement> 里钉的就是 ${revision}。 -->
-        <revision>0.1.10</revision>
+             自家 5 个 reactor 坐标在 <dependencyManagement> 里钉的就是 ${revision}。
+             ⚠ 2026-11-09 抬 0.1.10 → 0.1.11：0.1.10 已在中央（lastUpdated=20261106144315）
+               且**不含**本次 API Key 租户隔离（ApiKey.tenantCode / enforceTenant /
+               UsageLedger.byTenant）。中央件不可撤回 ⇒ 同版本绝不能重发，只能抬号。 -->
+        <revision>0.1.11</revision>
 
         <!-- JDK / 编译：maven.compiler.source=8 / maven.compiler.target=8 /
              project.build.sourceEncoding=UTF-8 三格与父链逐字节相同
