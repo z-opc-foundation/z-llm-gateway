@@ -43,6 +43,14 @@ public class ApiKey {
     /** 每分钟请求次数限制 (null 表示不限). */
     private Integer requestsPerMinute;
 
+    /**
+     * 预付额度上限 (累计花费, 与 {@code z.llm.currency} 同币种; null 表示不限).
+     *
+     * <p>对外售卖的计费闸口: 每个请求的成本由 UsageLedger 按 key 累计, 累计花费达到本额度后
+     * 网关拒绝继续服务 (402). 一次请求的成本可能略超过阈值, 属预付费的常规软上限.
+     */
+    private Double quota;
+
     /** 创建时间 (epoch millis). */
     private Long createdAt;
 
@@ -132,6 +140,14 @@ public class ApiKey {
 
     public void setRequestsPerMinute(Integer requestsPerMinute) {
         this.requestsPerMinute = requestsPerMinute;
+    }
+
+    public Double getQuota() {
+        return quota;
+    }
+
+    public void setQuota(Double quota) {
+        this.quota = quota;
     }
 
     public Long getCreatedAt() {

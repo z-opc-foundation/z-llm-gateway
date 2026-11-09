@@ -13,7 +13,8 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 @ComponentScan(
         basePackages = {
                 "com.zifang.z.llm.gateway.config.controller",
-                "com.zifang.z.llm.gateway.config.service"
+                "com.zifang.z.llm.gateway.config.service",
+                "com.zifang.z.llm.gateway.config.auth"
         },
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
 )

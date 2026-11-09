@@ -1,38 +1,377 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <title th:text="${title}">z-llm 控制台</title>
-    <style>
-        body { font-family: -apple-system, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; color: #222; }
-        h1 { font-size: 22px; margin-bottom: 12px; }
-        .card { border: 1px solid #e6e6e6; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        code { background: #f3f3f3; padding: 2px 6px; border-radius: 4px; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title th:text="${title}">Z-OPC 智能网关 · 运营控制台</title>
+<style>
+:root{
+  --bg:#F7F8FC; --card:#FFFFFF; --side:#EDF0F8;
+  --brand:#7C5CFF; --brand-d:#5B3DF0; --brand-soft:#F0ECFF;
+  --ink:#1E1E1E; --mut:#6B7280; --mut2:#9AA3B8; --line:#EAECF2; --line2:#E5E7EB;
+  --p:#10B981; --pk:#E9F8F1; --w:#F59E0B; --wk:#FDF1E2; --e:#EF4444; --ek:#FDEBEB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",-apple-system,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:14px;display:flex;min-height:100vh}
+.mono{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:12px;letter-spacing:.2px}
+/* Sidebar */
+aside{width:228px;background:var(--side);padding:18px 12px;display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 6px 14px}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.brand .t{font-weight:700;font-size:15px}
+.brand .s{font-size:10.5px;color:var(--mut2);margin-top:2px}
+.seclab{font-size:10.5px;color:var(--mut2);padding:10px 12px 4px;font-weight:600}
+.menu{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:19px;cursor:pointer;color:#4B5563;margin-bottom:2px}
+.menu.active{background:var(--brand);color:#fff;box-shadow:0 2px 6px rgba(90,60,240,.2)}
+.menu:not(.active):hover{background:#E2E6F1}
+.menu .dot{width:8px;height:8px;border-radius:4px;background:var(--mut2)}
+.menu.active .dot{background:#7CF7C9}
+.menu .ic{width:18px;text-align:center}
+.grow{flex:1}
+.foot{font-size:10px;color:#A6B0C4;text-align:center;padding-top:8px}
+/* Main */
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar .crumb{color:var(--mut2);font-size:13px}
+.topbar .crumb b{color:var(--ink);font-weight:600}
+.tokenbox{display:flex;gap:8px;align-items:center}
+.tokenbox input{width:220px;height:32px;border:1px solid var(--line2);border-radius:16px;padding:0 12px;font-size:12px;background:#F3F4FA}
+.tokenbox button{height:32px;border:none;border-radius:16px;background:var(--brand);color:#fff;padding:0 14px;font-size:12px;cursor:pointer}
+.content{flex:1;padding:22px 24px;overflow:auto}
+/* Page head */
+.pghead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.pghead h1{font-size:22px;font-weight:700}
+.pghead .sub{font-size:12.5px;color:var(--mut2);margin-top:3px}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .lab{font-size:13px;color:var(--mut);display:flex;justify-content:space-between;align-items:center}
+.kpi .lab .ch{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.kpi .val{font-size:25px;font-weight:600;margin-top:9px;font-family:"JetBrains Mono","SF Mono",monospace}
+.kpi .sub{font-size:11px;color:var(--mut2);margin-top:6px}
+/* Cards & grid */
+.grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.grid2 .wide-narrow{grid-column:1/3}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;font-weight:700;margin-bottom:4px}
+.card .hint{font-size:11.5px;color:var(--mut2);margin-bottom:12px}
+.card h2 .link{float:right;color:var(--brand);font-size:12px;cursor:pointer;font-weight:600}
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;color:var(--mut2);text-align:left;padding:9px 12px;background:#FAFBFE;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #F4F5FA;white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.bar{width:84px;height:5px;background:#ECEEF5;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.bar i{display:block;height:100%;background:var(--brand);border-radius:3px}
+.pill{display:inline-block;padding:3px 9px;border-radius:9px;font-size:11px;font-weight:600}
+.pill.g{background:var(--pk);color:#0E9F6E}.pill.w{background:var(--wk);color:#E5870A}.pill.e{background:var(--ek);color:#DC3D3D}.pill.x{background:#EFF1F6;color:#98A1B3}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;color:#4B5563}
+.btn.p{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.p:hover{background:var(--brand-d)}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.d:hover{border-color:var(--e);color:var(--e)}
+.iconbtn{border:none;background:none;cursor:pointer;color:var(--brand);font-size:12px;margin-right:8px}
+.iconbtn.danger{color:var(--e)}
+/* notice */
+.hintline{font-size:12px;color:var(--mut);margin:2px 0}
+.panel{display:none}.panel.active{display:block}
+.toast{position:fixed;right:20px;bottom:20px;background:#11131C;color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;z-index:99;max-width:420px;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast button{margin-left:10px;border:none;background:var(--brand);color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer}
+.modal{position:fixed;inset:0;background:rgba(17,19,28,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.modal .box{background:#fff;border-radius:14px;padding:22px;width:480px;max-width:92vw}
+.modal h3{font-size:16px;margin-bottom:6px}
+.modal .code{background:#121A2E;color:#7FDBB8;border-radius:10px;padding:12px;margin:14px 0;word-break:break-all;font-family:Consolas,monospace;font-size:13px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form label{font-size:11.5px;color:var(--mut2);display:block;margin-bottom:3px}
+.form input,.form select{width:100%;height:32px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;font-size:12.5px}
+.form .full{grid-column:1/3}
+.form .row-actions{grid-column:1/3;display:flex;justify-content:flex-end;gap:8px}
+.ta{color:var(--e)} .ok{color:#0E9F6E}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.pv{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.pv .vc{background:var(--brand-soft);color:var(--brand);display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:12px;margin-bottom:8px}
+</style>
 </head>
 <body>
-    <h1 th:text="${title}">z-llm 控制台</h1>
 
-    <div class="card">
-        <p>管理面 REST 端点:</p>
-        <ul>
-            <li><code>GET /z-llm/admin/overview</code> — 概览</li>
-            <li><code>GET /z-llm/admin/vendors</code> — 各 vendor 凭据数 / 模型数</li>
-            <li><code>GET /z-llm/admin/vendors/{vendor}/models</code> — 列模型</li>
-            <li><code>GET /z-llm/admin/credentials</code> — 凭据清单</li>
-            <li><code>GET /z-llm/admin/api-keys</code> — API Key 清单</li>
-            <li><code>GET /z-llm/admin/rate-limit</code> — 限流桶快照</li>
-            <li><code>GET /z-llm/admin/health</code> — 健康检查</li>
-        </ul>
+<aside>
+  <div class="brand">
+    <div class="logo">Z</div>
+    <div>
+      <div class="t">Z-OPC 智能网关</div>
+      <div class="s">运营控制台 · LLM Gateway</div>
     </div>
+  </div>
+  <div class="seclab">经 营</div>
+  <div class="menu active" data-tab="overview"><span class="ic">▦</span>运营总览</div>
+  <div class="menu" data-tab="keys"><span class="ic">⌘</span>API 令牌</div>
+  <div class="menu" data-tab="usage"><span class="ic">¥</span>用量与计费</div>
+  <div class="seclab">资 源</div>
+  <div class="menu" data-tab="vendors"><span class="ic">◈</span>渠道与模型</div>
+  <div class="seclab">平台治理</div>
+  <div class="menu" data-tab="health"><span class="ic">☼</span>健康与限流</div>
+  <div class="grow"></div>
+  <div class="foot">z-llm-gateway · 运营控制台</div>
+</aside>
 
-    <div class="card">
-        <p>对外协议端点:</p>
-        <ul>
-            <li><code>POST /v1/chat/completions</code> — OpenAI Chat Completions 兼容</li>
-            <li><code>POST /v1/messages</code> — Anthropic Messages API 兼容</li>
-        </ul>
+<main>
+  <div class="topbar">
+    <div class="crumb">智能中心 ／ <b>LLM 网关 · 运营控制台</b></div>
+    <div class="tokenbox">
+      <input id="admintoken" type="password" placeholder="X-Admin-Token（未配则可留空）" />
+      <button onclick="saveToken()">保存</button>
     </div>
+  </div>
+
+  <div class="content">
+    <!-- 总览 -->
+    <section class="panel active" id="panel-overview">
+      <div class="pghead"><div><h1>运营总览</h1><div class="sub">网关统一接入 · 对外提供 OpenAI 兼容 baseurl</div></div>
+        <div><button class="btn" onclick="swapTab('keys')">签发令牌 →</button></div>
+      </div>
+      <div class="kpis" id="ov-kpis"></div>
+      <div class="grid2">
+        <div class="card"><h2>渠道健康 <span class="link" onclick="swapTab('vendors')">全部渠道 →</span></h2>
+          <div class="hint">各上游厂商凭据与可用模型数</div><div id="ov-vendors"></div></div>
+        <div class="card"><h2>网关入口 <span class="link" onclick="swapTab('health')">健康检查 →</span></h2>
+          <div class="hint"><span class="mono">base_url = https://llm.&lt;你的域&gt;/v1</span></div>
+          <div id="ov-health"></div></div>
+      </div>
+    </section>
+
+    <!-- API 令牌 -->
+    <section class="panel" id="panel-keys">
+      <div class="pghead"><div><h1>API 令牌</h1><div class="sub">签发 / 调额 / 停用 —— 给客户或内部应用发接入凭证</div></div>
+        <div><button class="btn p" onclick="openIssue()">＋ 签发新令牌</button></div>
+      </div>
+      <div class="card" style="padding:0"><div style="overflow:auto">
+        <table><thead><tr>
+          <th>名称</th><th>令牌</th><th>ID</th><th>模型范围</th><th>额度（已用 / 上限）</th><th>状态</th><th>created</th><th>操作</th>
+        </tr></thead><tbody id="key-rows"></tbody></table>
+      </div></div>
+    </section>
+
+    <!-- 用量 -->
+    <section class="panel" id="panel-usage">
+      <div class="pghead"><div><h1>用量与计费</h1><div class="sub" id="usage-currency"></div></div>
+        <div><button class="btn" onclick="loadUsage()">刷新</button></div>
+      </div>
+      <div class="card"><h2>按 API Key</h2><div class="hint">请求量 / token / 失败 / 花费</div>
+        <table><thead><tr><th>Key ID</th><th>请求</th><th>输入 Token</th><th>输出 Token</th><th>失败</th><th>未定价</th><th>花费</th><th>最近调用</th></tr></thead>
+        <tbody id="usage-bykey"></tbody></table></div>
+      <div class="card"><h2>按 Key × 模型</h2>
+        <table><thead><tr><th>Key ID</th><th>模型</th><th>请求</th><th>输入</th><th>输出</th><th>失败</th><th>花费</th></tr></thead>
+        <tbody id="usage-bymodel"></tbody></table></div>
+    </section>
+
+    <!-- 渠道 -->
+    <section class="panel" id="panel-vendors">
+      <div class="pghead"><div><h1>渠道与模型</h1><div class="sub">上游厂商统一纳管 · 自动故障转移</div></div></div>
+      <div class="card"><h2>渠道健康</h2>
+        <div class="grid-auto" id="vendor-cards"></div></div>
+    </section>
+
+    <!-- 健康 -->
+    <section class="panel" id="panel-health">
+      <div class="pghead"><div><h1>健康与限流</h1><div class="sub">网关运行状态 · 限流桶快照</div></div>
+        <div><button class="btn" onclick="loadHealth()">刷新</button></div></div>
+      <div class="grid2"><div class="card"><h2>网关健康</h2><div id="health-body"></div></div>
+        <div class="card"><h2>限流桶</h2><div id="rl-body"></div></div></div>
+    </section>
+  </div>
+</main>
+
+<!-- 签发弹窗 -->
+<div class="modal" id="issue-modal">
+  <div class="box">
+    <h3>签发新 API 令牌</h3>
+    <div class="hint">完整 key（<span class="mono">sk-zopc-…</span>）只显示一次，请立即保存。</div>
+    <div class="form">
+      <div><label>名称 *</label><input id="f-name" placeholder="如：生产网关 · 主" /></div>
+      <div><label>Owner / 租户</label><input id="f-owner" placeholder="可选" /></div>
+      <div><label>额度（预付上限，币种同网关）</label><input id="f-quota" placeholder="留空 = 不限" /></div>
+      <div><label>过期天数</label><input id="f-days" placeholder="留空 = 永不过期" /></div>
+      <div class="full"><label>限定 Vendor（逗号分隔，可空=不限）</label><input id="f-vendors" placeholder="如：openai,deepseek" /></div>
+      <div class="row-actions"><button class="btn" onclick="closeIssue()">取消</button><button class="btn p" onclick="doIssue()">签发</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" style="display:none"></div>
+<div class="toast" id="issued-toast" style="display:none"></div>
+
+<script>
+const BASE = '/z-llm/admin';
+let token = sessionStorage.getItem('zopc_admin_token') || '';
+
+function saveToken(){
+  token = document.getElementById('admintoken').value.trim();
+  sessionStorage.setItem('zopc_admin_token', token);
+  notice('管理令牌已保存', 1600);
+}
+
+async function api(path, opts={}){
+  opts.headers = opts.headers||{};
+  opts.headers['Content-Type'] = 'application/json';
+  if(token) opts.headers['X-Admin-Token'] = token;
+  const res = await fetch(BASE+path, opts);
+  const txt = await res.text();
+  let data = null; try{ data = txt?JSON.parse(txt):null; }catch(e){ data = txt; }
+  if(!res.ok){ throw {status:res.status, msg: data && (data.error||data.message) ? (data.error||data.message) : ('HTTP '+res.status) }; }
+  return data;
+}
+function notice(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', 2600); }
+function money(v,cur){ if(v==null) return '—'; const n=Number(v); return (cur==='CNY'?'¥':(cur?' '+cur:'$')) + (Number.isInteger(n)? n.toLocaleString() : Number(n.toFixed(4)).toLocaleString()); }
+function tkey(k){ return k && k.startsWith('property:') ? (k.split(':')[1]||k) : k; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function swapTab(name){
+  document.querySelectorAll('.menu').forEach(m=>m.classList.toggle('active', m.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+  if(name==='overview') loadOverview();
+  if(name==='keys') loadKeys();
+  if(name==='usage') loadUsage();
+  if(name==='vendors') loadVendors();
+  if(name==='health') loadHealth();
+}
+document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click', ()=>swapTab(m.dataset.tab)));
+
+/* ---------- 总览 ---------- */
+async function loadOverview(){
+  try{
+    const [ov, health] = await Promise.all([api('/overview'), api('/health')]);
+    const cards = [
+      ['上游渠道', ov.credentialCount, 'vendor 凭据数', '◎', '#E6F3FF','#2F7BE6'],
+      ['已签发令牌', ov.activeApiKeys, 'active API keys', '⌘', '#EDE9FF','#7C5CFF'],
+      ['限流桶', ov.rateLimitBuckets, 'in-flight buckets', '◈', '#E8F7F0','#10B981'],
+      ['网关状态', health.status, health.providers+' providers · '+health.credentials+' credentials', '☼', '#FFF4E6','#F59E0B'],
+    ];
+    document.getElementById('ov-kpis').innerHTML = cards.map(c=>`
+      <div class="kpi"><div class="lab">${c[0]}<span class="ch" style="background:${c[4]};color:${c[5]}">${c[2]?c[2]:''}</span></div>
+      <div class="val">${c[1]}</div><div class="sub">${c[3]}</div></div>`).join('');
+    document.getElementById('ov-vendors').innerHTML =
+      (ov.vendors||[]).map(v=>{
+        const ok = Number(v.credentials)>0;
+        return `<div class="hintline" style="display:flex;justify-content:space-between"><span><span class="pill ${ok?'g':'x'}" style="margin-right:8px">${esc(v.vendor)}</span>凭据 ${v.credentials} · 模型 ${v.models}</span><span class="${ok?'ok':'ta'}">${ok?'在线':'未接入'}</span></div>`;
+      }).join('') || '<div class="hintline">无渠道数据</div>';
+    document.getElementById('ov-health').innerHTML =
+      `<div class="hintline"><span class="pill g">运行正常</span> 于 ${health.status||'UP'}</div>
+       <div class="hintline">providers ${health.providers} · credentials ${health.credentials}</div>
+       <div class="hintline"><button class="btn" style="margin-top:6px" onclick="swapTab('health')">查看健康与限流</button></div>`;
+  }catch(e){ notice('总览加载失败：'+(e.msg||e)); }
+}
+
+/* ---------- API 令牌 ---------- */
+async function loadKeys(){
+  try{
+    const rows = await api('/api-keys');
+    document.getElementById('key-rows').innerHTML = rows.map(k=>{
+      const ratio = Number(k.usageRatio||0)*100;
+      const pill = k.status==='disabled' ? '<span class="pill x">已停用</span>'
+        : k.warning ? '<span class="pill w">预警</span>' : '<span class="pill g">启用</span>';
+      const masks = (k.maskedKey||'');
+      const created = k.createdAt? new Date(k.createdAt).toISOString().slice(0,10) : '—';
+      return `<tr>
+        <td><b>${esc(k.name||'(未命名)')}</b><br><span class="mono" style="color:var(--mut2)">${tkey(k.id)}</span></td>
+        <td class="mono">${esc(masks)}</td>
+        <td><span class="mono">${esc(k.id)}</span></td>
+        <td>${k.allowedModels ? k.allowedModels.length+' 模型' : '全部'}</td>
+        <td style="width:180px">
+          <div style="display:flex;justify-content:space-between;font-size:12px">
+            <span>${money(k.used)} / ${k.quota==null?'不限':money(k.quota)}</span>
+            <span class="${k.warning?'ta':'ok'}" style="font-size:11px">${ratio.toFixed(0)}%</span></div>
+          <div class="bar" style="width:100%;margin-top:4px"><i style="width:${Math.min(100,ratio).toFixed(0)}%;background:${k.warning?'var(--w)':'var(--brand)'}"></i></div>
+        </td>
+        <td>${pill}</td><td class="mono">${created}</td>
+        <td>
+          <button class="iconbtn" onclick="topUp('${esc(k.id)}')">充值</button>
+          ${k.status!=='disabled' ? `<button class="iconbtn danger" onclick="disableKey('${esc(k.id)}')">停用</button>` : ''}
+        </td></tr>`;
+    }).join('') || `<tr><td colspan="8" style="text-align:center;color:var(--mut2);padding:24px">尚无令牌 —— 点右上角「签发新令牌」</td></tr>`;
+  }catch(e){ notice('令牌加载失败：'+(e.msg||e)); }
+}
+function openIssue(){
+  ['name','owner','quota','days','vendors'].forEach(id=>document.getElementById('f-'+id).value='');
+  document.getElementById('issue-modal').style.display='flex';
+}
+function closeIssue(){ document.getElementById('issue-modal').style.display='none'; }
+async function doIssue(){
+  const body={
+    name: document.getElementById('f-name').value.trim(),
+    ownerId: document.getElementById('f-owner').value.trim() || null,
+    quota: document.getElementById('f-quota').value.trim()===''? null : Number(document.getElementById('f-quota').value),
+    expiresInDays: document.getElementById('f-days').value.trim()===''? null : Number(document.getElementById('f-days').value),
+    allowedVendors: document.getElementById('f-vendors').value.trim()===''? null : document.getElementById('f-vendors').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+  };
+  try{
+    const res = await api('/api-keys', {method:'POST', body: JSON.stringify(body)});
+    closeIssue();
+    const t=document.getElementById('issued-toast');
+    t.innerHTML = `<b>令牌已签发 —— 请立即保存，不再显示</b><br><span class="code" style="display:block;word-break:break-all;margin-top:4px">${esc(res.key)}</span><button onclick="this.parentNode.style.display='none'">知道了</button>`;
+    t.style.display='block';
+    loadKeys();
+  }catch(e){ notice('签发失败：'+(e.msg||e)); }
+}
+async function topUp(id){
+  const v = prompt('充值额度（正数充、负数扣减）：');
+  if(v==null||v.trim()==='') return;
+  try{ await api('/api-keys/'+encodeURIComponent(id)+'/quota', {method:'POST', body: JSON.stringify({delta:Number(v)})});
+    notice('已调整额度'); loadKeys(); }catch(e){ notice('失败：'+(e.msg||e)); }
+}
+async function disableKey(id){
+  if(!confirm('确认停用该令牌？停用后鉴权立即失败。')) return;
+  try{ await api('/api-keys/'+encodeURIComponent(id)+'/disable', {method:'POST', body:'{}'});
+    notice('已停用'); loadKeys(); }catch(e){ notice('失败：'+(e.msg||e)); }
+}
+
+/* ---------- 用量 ---------- */
+async function loadUsage(){
+  try{
+    const d = await api('/usage');
+    document.getElementById('usage-currency').textContent = '计费币种：'+(d.currency||'—');
+    document.getElementById('usage-bykey').innerHTML =
+      (d.byKey||[]).map(r=>`<tr><td class="mono">${tkey(r.keyId)}</td><td>${r.requests}</td><td>${r.promptTokens}</td><td>${r.completionTokens}</td><td>${r.failures}</td><td>${r.unpricedRequests}</td><td><b>${money(r.cost,d.currency)}</b></td><td class="mono">${r.lastSeenMs?new Date(r.lastSeenMs).toISOString().slice(11,19):'—'}</td></tr>`).join('')
+      || `<tr><td colspan="8" style="text-align:center;color:var(--mut2)">暂无用量</td></tr>`;
+    document.getElementById('usage-bymodel').innerHTML =
+      (d.byKeyModel||[]).map(r=>`<tr><td class="mono">${tkey(r.keyId)}</td><td class="mono">${esc(r.model||'')}</td><td>${r.requests}</td><td>${r.promptTokens}</td><td>${r.completionTokens}</td><td>${r.failures}</td><td><b>${money(r.cost,d.currency)}</b></td></tr>`).join('')
+      || `<tr><td colspan="7" style="text-align:center;color:var(--mut2)">暂无明细</td></tr>`;
+  }catch(e){ notice('用量加载失败：'+(e.msg||e)); }
+}
+
+/* ---------- 渠道 ---------- */
+async function loadVendors(){
+  try{
+    const rows = await api('/vendors');
+    document.getElementById('vendor-cards').innerHTML = rows.map(v=>{
+      const ok = Number(v.credentials)>0;
+      return `<div class="pv"><span class="vc">${esc(v.vendor)}</span><br>
+        <div style="font-size:13px">凭据 <b>${v.credentials}</b></div>
+        <div style="font-size:12px;color:var(--mut2)">模型 <b>${v.models}</b></div>
+        <div style="margin-top:6px"><span class="pill ${ok?'g':'x'}">${ok?'在线':'未接入'}</span></div></div>`;
+    }).join('') || '<div class="hintline">无渠道</div>';
+  }catch(e){ notice('渠道加载失败：'+(e.msg||e)); }
+}
+
+/* ---------- 健康 ---------- */
+async function loadHealth(){
+  try{
+    const [h, rl] = await Promise.all([api('/health'), api('/rate-limit')]);
+    document.getElementById('health-body').innerHTML =
+      `<div class="hintline"><span class="pill ${h.status==='UP'?'g':'e'}">${esc(h.status||'UP')}</span>  ·  网关${h.status==='UP'?'运行正常':'异常'}</div>
+       <div class="hintline">providers 解析到 <b>${h.providers}</b> 家 · 凭据 <b>${h.credentials}</b> 条</div>`;
+    const snap = (typeof rl==='object' && rl.byKey) ? rl : {byKey: rl};
+    const buckets = snap.byKey && Array.isArray(snap.byKey) ? snap.byKey : (Object.keys(rl||{}).length?[rl]:[]);
+    document.getElementById('rl-body').innerHTML =
+      `<div class="hintline">限流桶数量：<b>${Array.isArray(buckets)?buckets.length:(Object.keys(rl||{}).length)}</b></div>
+       <pre class="mono" style="font-size:11px;color:var(--mut);margin-top:8px;white-space:pre-wrap;max-height:260px;overflow:auto">${esc(JSON.stringify(rl,null,2))}</pre>`;
+  }catch(e){ notice('健康加载失败：'+(e.msg||e)); }
+}
+
+const saved = sessionStorage.getItem('zopc_admin_token') || '';
+token = saved;
+document.getElementById('admintoken').value = saved;
+loadOverview();
+</script>
 </body>
 </html>

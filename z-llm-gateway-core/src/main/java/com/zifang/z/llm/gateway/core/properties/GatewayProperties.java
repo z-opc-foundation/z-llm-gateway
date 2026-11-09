@@ -32,6 +32,24 @@ public class GatewayProperties {
     /** 是否暴露 admin 端点. */
     private boolean exposeAdmin = false;
 
+    /**
+     * 控制面管理令牌 (可选). 非空时 /z-llm/admin/** 必须带 {@code X-Admin-Token}
+     * (或 {@code Authorization: Bearer <token>}) 且与之常量时间相等, 否则 401.
+     *
+     * <p>为空 = 不校验 (向后兼容; 仅建议在已由前置网关做鉴权的内网部署使用).
+     * 控制面能列出凭据、改额度、停用 key, 公网/共享环境务必配上.
+     */
+    private String adminToken;
+
+    /**
+     * 运行时 API Key 状态持久化文件路径 (可选).
+     *
+     * <p>已签发 key、额度调整、停用等运行期变更默认只存内存 (重启回配置值);
+     * 非空时把这份「运行期增量」落到指定 JSON 文件, 重启自动恢复, 便于按 key 长期对账.
+     * 空 = 不持久化 (向后兼容).
+     */
+    private String apiKeyStorePath;
+
     /** 默认最大 token 上限 (越权拒绝). */
     private Integer maxTokensLimit = 32768;
 
@@ -219,6 +237,22 @@ public class GatewayProperties {
 
     public void setExposeAdmin(boolean exposeAdmin) {
         this.exposeAdmin = exposeAdmin;
+    }
+
+    public String getAdminToken() {
+        return adminToken;
+    }
+
+    public void setAdminToken(String adminToken) {
+        this.adminToken = adminToken;
+    }
+
+    public String getApiKeyStorePath() {
+        return apiKeyStorePath;
+    }
+
+    public void setApiKeyStorePath(String apiKeyStorePath) {
+        this.apiKeyStorePath = apiKeyStorePath;
     }
 
     public Integer getMaxTokensLimit() {

@@ -62,6 +62,11 @@ public class GatewayException extends RuntimeException {
         return new GatewayException(429, "rate_limited", message);
     }
 
+    /** 402 — 额度用尽 (预付余额/配额扣完, 需充值). */
+    public static GatewayException quotaExceeded(String message) {
+        return new GatewayException(402, "quota_exceeded", message);
+    }
+
     /** 502 — 上游 vendor 调用失败. */
     public static GatewayException upstreamFailed(String message, Throwable cause) {
         return new GatewayException(502, "upstream_failed", message, cause);

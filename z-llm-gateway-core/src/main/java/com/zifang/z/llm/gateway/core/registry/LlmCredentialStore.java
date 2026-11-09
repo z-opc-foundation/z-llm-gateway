@@ -39,23 +39,56 @@ public class LlmCredentialStore implements InitializingBean {
         this.properties = properties;
     }
 
+    /** 由配置面 (DB) 下发的受管凭据; 按 alias 覆盖同名的静态配置凭据. 空 = 不参与. */
+    private volatile List<LlmCredential> managedCredentials = java.util.Collections.emptyList();
+
     @Override
     public void afterPropertiesSet() {
         reload();
     }
 
-    /** 从配置重新加载. */
+    /** 从配置重新加载 (保留已下发的受管凭据). */
     public synchronized void reload() {
-        Map<Vendor, List<LlmCredential>> newByVendor = new EnumMap<>(Vendor.class);
-        Map<String, LlmCredential> newByAlias = new ConcurrentHashMap<>();
+        rebuild();
+    }
 
+    /**
+     * 应用配置面 (DB) 下发的受管凭据, 与静态配置合并后重建.
+     *
+     * <p>这是"UI/DB 里写的供应商+模型 → 网关运行时"的桥: 配置模块在 CRUD 后调用它,
+     * 使新增或修改的 provider 立即进入凭据池, 从而被 {@code ModelRouter} 路由消费 ——
+     * 否则前端配置的模型在网关运行时不可见, 请求必然 model not found.
+     *
+     * <p>按 alias 去重: 受管凭据覆盖同 alias 的静态配置凭据 (DB 是配置面的权威).
+     */
+    public synchronized void applyManaged(List<LlmCredential> managed) {
+        this.managedCredentials = managed == null
+                ? java.util.Collections.emptyList()
+                : new ArrayList<>(managed);
+        rebuild();
+    }
+
+    private void rebuild() {
+        // 先按 alias 归集: 静态配置为底, 受管凭据按 alias 覆盖.
+        Map<String, LlmCredential> byAliasMap = new java.util.LinkedHashMap<>();
         for (LlmCredential cred : properties.getCredentials()) {
-            if (cred.getVendor() == null) {
-                log.warn("Skip credential without vendor: alias={}", cred.getAlias());
+            if (cred.getAlias() == null || cred.getAlias().isEmpty()) {
                 continue;
             }
+            byAliasMap.put(cred.getAlias(), cred);
+        }
+        for (LlmCredential cred : managedCredentials) {
             if (cred.getAlias() == null || cred.getAlias().isEmpty()) {
-                log.warn("Skip credential without alias: vendor={}", cred.getVendor());
+                continue;
+            }
+            byAliasMap.put(cred.getAlias(), cred);
+        }
+
+        Map<Vendor, List<LlmCredential>> newByVendor = new EnumMap<>(Vendor.class);
+        Map<String, LlmCredential> newByAlias = new ConcurrentHashMap<>();
+        for (LlmCredential cred : byAliasMap.values()) {
+            if (cred.getVendor() == null) {
+                log.warn("Skip credential without vendor: alias={}", cred.getAlias());
                 continue;
             }
             newByVendor.computeIfAbsent(cred.getVendor(), v -> new ArrayList<>()).add(cred);
@@ -75,8 +108,8 @@ public class LlmCredentialStore implements InitializingBean {
         this.byVendor.putAll(newByVendor);
         this.byAlias.clear();
         this.byAlias.putAll(newByAlias);
-        log.info("LlmCredentialStore loaded: vendors={}, total={}",
-                byVendor.size(), newByAlias.size());
+        log.info("LlmCredentialStore reloaded: vendors={}, total={}, managed={}",
+                newByVendor.size(), newByAlias.size(), managedCredentials.size());
     }
 
     /** 按 vendor 列出所有可用凭据 (已按 priority 排序). */

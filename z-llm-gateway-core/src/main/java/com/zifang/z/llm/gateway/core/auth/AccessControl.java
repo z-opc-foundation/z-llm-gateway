@@ -5,6 +5,7 @@ import com.zifang.z.llm.gateway.api.dto.Vendor;
 import com.zifang.z.llm.gateway.api.exception.GatewayException;
 import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import com.zifang.z.llm.gateway.core.router.ModelRouter;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +26,16 @@ public class AccessControl {
 
     private final GatewayProperties properties;
 
+    /** 用量台账 (可选): 有它才做预付额度扣减校验; 无它(如单测)跳过额度闸. */
+    private final UsageLedger usageLedger;
+
     public AccessControl(GatewayProperties properties) {
+        this(properties, null);
+    }
+
+    public AccessControl(GatewayProperties properties, UsageLedger usageLedger) {
         this.properties = properties;
+        this.usageLedger = usageLedger;
     }
 
     public void authorize(ApiKey key, ModelRouter.Resolved resolved, Integer requestedMaxTokens) {
@@ -34,6 +43,9 @@ public class AccessControl {
             throw GatewayException.unauthorized("Missing API key");
         }
         checkMaxTokens(requestedMaxTokens);
+        // 预付额度闸 — 与 enforce-key-restrictions 无关: 余额用尽即使是"白名单也放行"的灰度
+        // 也必须拒绝, 否则对外售卖就是白送.
+        checkQuota(key);
         if (!properties.isEnforceKeyRestrictions()) {
             return;
         }
@@ -58,6 +70,27 @@ public class AccessControl {
         if (requested > cap) {
             throw GatewayException.invalidRequest(
                     "max_tokens " + requested + " exceeds gateway limit " + cap);
+        }
+    }
+
+    /**
+     * 预付额度闸: 该 key 的累计花费 (&gt;= quota) 时拒绝, 返回 402.
+     *
+     * <p>额度按"累计花费"语义 (UsageLedger 按 key 记 cost), 用前校验、用后由 ledger 累计扣减。
+     * {@code quota} 为 null 视为不限; 无账本时跳过 (单测/无计量部署).
+     */
+    private void checkQuota(ApiKey key) {
+        if (usageLedger == null || key.getQuota() == null) {
+            return;
+        }
+        double used = usageLedger.totalCost(key);
+        if (used >= key.getQuota()) {
+            if (log.isInfoEnabled()) {
+                log.info("quota exhausted for key {} ({}): used={} quota={}",
+                        key.getId(), masked(key), used, key.getQuota());
+            }
+            throw GatewayException.quotaExceeded(
+                    "quota exhausted: used " + used + " / quota " + key.getQuota());
         }
     }
 

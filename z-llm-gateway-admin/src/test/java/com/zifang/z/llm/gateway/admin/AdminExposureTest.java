@@ -10,6 +10,7 @@ import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
 import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
 import com.zifang.z.llm.gateway.core.service.RateLimiter;
+import com.zifang.z.llm.gateway.core.usage.UsageLedger;
 import org.junit.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -38,6 +39,7 @@ public class AdminExposureTest {
                 .withBean(LlmProviderRegistry.class, () -> new LlmProviderRegistry(store))
                 .withBean(ApiKeyService.class, () -> new ApiKeyService(props))
                 .withBean(RateLimiter.class, () -> new RateLimiter(props))
+                .withBean(UsageLedger.class, () -> new UsageLedger(props))
                 .withUserConfiguration(ZLlmAdminAutoConfiguration.class);
     }
 
@@ -69,7 +71,7 @@ public class AdminExposureTest {
         RateLimiter rateLimiter = new RateLimiter(props);
         AdminController controller = new AdminController(
                 new AdminQueryService(registry, store, apiKeyService, rateLimiter),
-                store, registry, apiKeyService, rateLimiter);
+                store, registry, apiKeyService, rateLimiter, new UsageLedger(props));
 
         List<Map<String, Object>> rows = controller.apiKeys();
         assertEquals(1, rows.size());

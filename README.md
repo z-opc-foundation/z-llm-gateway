@@ -48,7 +48,7 @@ Anthropic 的话，网关负责鉴权（自己签发的 ApiKey）、模型路由
 | 多模态直连 | `service/MultimodalChatRelay` | 带图请求绕过 kernel provider 直连上游（provider 传不了图） |
 | 向量端点 | `service/EmbeddingService` | 各家 embeddings 形状分形 |
 | 状态码信封 | `controller/GlobalExceptionHandler` | `{"error":{"message","type","code","param"}}` |
-| 自动装配 | `z-llm-gateway-starter` → `ZLlmAutoConfiguration`（12 个 `@Bean`，全部 `zLlm` 前缀）+ `ZLlmCoreScanConfig` | `META-INF/spring.factories` 注册，`z.llm.enabled=true` 才装配 |
+| 自动装配 | `z-llm-gateway-starter` → `ZLlmAutoConfiguration`（13 个 `@Bean`，全部 `zLlm` 前缀）+ `ZLlmCoreScanConfig` | `META-INF/spring.factories` 注册，`z.llm.enabled=true` 才装配 |
 | 控制面 | `z-llm-gateway-admin`：`AdminController` / `AdminUiController` / `AdminQueryService` / `ZLlmAdminAutoConfiguration` | `z.llm.expose-admin=true` 才注册 |
 
 ### vendor 支持口径（只讲代码，不背书连通性）
@@ -87,7 +87,7 @@ z-llm-gateway/
 └── z-llm-gateway-admin/           # 控制面 REST + Thymeleaf 概览页（templates/z-llm-admin/index.html）
 ```
 
-代码体量实测：`src/main/java` 共 63 支（api 17 / core 25 / starter 3 / config 13 / admin 5）；`src/test/java` 的各模块支数**只点名不计数**（api / config 无测试，core / starter / admin 有）—— 本仓 README 自守卫也落在 core 里，写死即漂。
+代码体量实测：`src/main/java` 共 74 支（api 17 / core 29 / starter 3 / config 18 / admin 7）；`src/test/java` 的各模块支数**只点名不计数**（api 无测试，config 新建 mapper/auth 单测，core / starter / admin 有）—— 本仓 README 自守卫也落在 core 里，写死即漂。
 
 下面几条差异都是 POM 与发布层面的实测事实（与 z-ctc 那类仓对照着看最容易踩）：
 
@@ -231,15 +231,19 @@ z.llm:
 | `GET /z-llm/admin/vendors` | 各 vendor 凭据数与模型数 |
 | `GET /z-llm/admin/vendors/{vendor}/models` | 列模型 |
 | `GET /z-llm/admin/credentials` | 凭据总数与分布（不含 key 原文） |
-| `GET /z-llm/admin/api-keys` | key 清单，**只回显掩码**（头尾各 4 位，≤8 位整串打星） |
+| `GET /z-llm/admin/api-keys` | key 清单，**只回显掩码**（头尾各 4 位，≤8 位整串打星）；含 `quota` / `used` / `remaining` / `usageRatio` / `warning` |
+| `POST /z-llm/admin/api-keys` | **签发新 key**：生成 `sk-zopc-***` 并即时注册（下一请求即可调用），明文**仅本次响应返回**；支持 `name` / `ownerId` / `quota` / `allowedModels` / `allowedVendors` / `tokensPerMinute` / `requestsPerMinute` / `expiresInDays` |
+| `POST /z-llm/admin/api-keys/{id}/quota` | 调额/充值：body `{quota:绝对值}` 或 `{delta:增量}`，立即对该 key 生效（改运行中实例） |
+| `POST /z-llm/admin/api-keys/{id}/disable` | 停用 key：从生效表移除，之后鉴权失败 |
 | `GET /z-llm/admin/rate-limit` | 限流桶快照 |
+| `GET /z-llm/admin/usage` | 用量/成本台账（按 ApiKey 与 ApiKey+model 两级，`UsageLedger.snapshot()`） |
 | `GET /z-llm/admin/health` | `status` / `providers` / `credentials` |
 | `GET /z-llm/admin/ui`、`/ui/`、`/ui/index` | Thymeleaf 最小概览页 |
 
-> ⚠ 这些端点自身没有鉴权，`expose-admin` 只保证"默认关"。公网或内网共享环境打开必须自行前置认证。
+> ⚠ 控制面鉴权：配了 `z.llm.admin-token` 时，`/z-llm/admin/**` 必须带 `X-Admin-Token`（或 `Authorization: Bearer`）且与之相等，否则 401；未配置时这些端点只靠 `expose-admin` 的"默认关"保底。公网或内网共享环境打开务必配 admin-token 或在前置网关加认证。
 
-**没有的端点也如实说**：`GatewayException` 定义了 413 工厂方法、`UsageLedger` 有 `snapshot()`，
-但 0.1.7 里两者都**没有任何 controller 调用点** —— 既没有 `/usage` 端点，也不会返回 413。
+**没有的端点也如实说**：`GatewayException` 定义了 413 工厂方法但**没有任何 controller 调用点** —— 目前不会返回 413。
+`/usage` 曾在 0.1.7 也是"有 `snapshot()` 无端点"，2026-11-08 已补上 `GET /z-llm/admin/usage` 挂到台账。
 
 ---
 
@@ -374,7 +378,7 @@ kernel 没公开常量 —— 是已知重复，不是同一个源）。
 
 上表那套状态码只在异常真的落到本类头上时成立。合并进程里有两个坑，0.1.5 各钉了一条：
 
-- **bean 名带 `zLlm` 前缀**（`@Component("zLlmGlobalExceptionHandler")` + `ZLlmAutoConfiguration` 里 12 个
+- **bean 名带 `zLlm` 前缀**（`@Component("zLlmGlobalExceptionHandler")` + `ZLlmAutoConfiguration` 里 13 个
   `@Bean` 同名前缀）。Spring 默认按简单类名首字母小写注册，宿主或另一支 L3 库里只要有同名类，扫描期就
   `ConflictingBeanDefinitionException` 直接起不来，且 `allow-bean-definition-overriding` 救不了。
 - **advice 限定 `basePackages` + `@Order(HIGHEST_PRECEDENCE)`**。Spring 解析异常时按 advice 顺序逐个问
@@ -412,6 +416,8 @@ kernel 没公开常量 —— 是已知重复，不是同一个源）。
 | `enabled` | 未设即不装配 | `@ConditionalOnProperty` 总开关（**不是** `GatewayProperties` 的字段），与遗留网关共存的必要设计 |
 | `credentials` | `[]` | 上游凭据列表 |
 | `api-keys` | `[]` | 调用方凭证列表 |
+| `admin-token` | 未设 | 控制面管理令牌：非空时 `/z-llm/admin/**` 必须带 `X-Admin-Token`（或 `Bearer`）且相等，否则 401 |
+| `api-key-store-path` | 未设 | **运行期 key 状态持久化文件路径**：非空时已签发 key / 额度调整 / 停用会落到该 JSON 文件并在重启后自动恢复（等同密钥库，须放到受管控位置）；空 = 仅内存 |
 | `expose-admin` | `false` | 是否注册控制面 |
 | `max-tokens-limit` | `32768` | 调用方传的 `max_tokens` 超限直接拒；未传则不主动限制 |
 | `rate-limit-enabled` | `true` | 限流总开关 |
@@ -425,7 +431,7 @@ kernel 没公开常量 —— 是已知重复，不是同一个源）。
 | `retry.cooldown-ms` | `30000` | 凭据冷却时长 |
 | `model-aliases` | `{}` | 请求 model → 内部 `vendor/model` |
 | `pricing` | `{}` | `"vendor/model"` → 每百万 token 单价；查找顺序为精确 → 裸 model → vendor 前缀 → 后缀匹配 |
-| `currency` | `USD` | 只进 `UsageLedger.snapshot()` 的 `currency` 字段。**0.1.7 没有任何 HTTP 端点回显它**（无 `/usage`），改这一格对调用方不可见 |
+| `currency` | `USD` | 只进 `UsageLedger.snapshot()` 的 `currency` 字段；由 `GET /z-llm/admin/usage` 回显 |
 | `relay-multimodal` | `true` | 带图请求是否绕过 provider 直连上游 |
 | `allow-multimodal-downgrade` | `false` | 不允许转发时是否容忍摊平成文本 |
 | `upstream-connect-timeout-sec` | `10` | 直连上游连接超时 |
@@ -449,7 +455,7 @@ mvn -B test                          # 全 reactor
 `-am` 不是可省的：不带它时 `z-llm-gateway-api` 会从本地 m2 解析到已发布的旧 jar，新增的 DTO 直接
 `NoClassDefFoundError`。改过 `z-llm-gateway-api` 后要让消费方看到，需要 `mvn install`。
 
-静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`）：`z-llm-gateway-core` 162 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 2。
+静态计数（2026-10-20 `grep @Test` 实测，**不含**本仓 README 自守卫 `ReadmeClaimsTest`）：`z-llm-gateway-core` 181 个测试方法、`z-llm-gateway-starter` 2、`z-llm-gateway-admin` 8。
 下表是同日全 reactor 跑通的 surefire 读数——两个数一个是静态计数、一个是运行汇总，
 口径不同，不要互相校正（`ProviderInvokerBudgetTest` 的 6 个方法与静态计数一致，
 差额来自 `@ParameterizedTest` 一类不由 `@Test` 计数的用法）：

@@ -2,8 +2,12 @@ package com.zifang.z.llm.gateway.starter.autoconfig;
 
 import com.zifang.z.llm.gateway.core.auth.AccessControl;
 import com.zifang.z.llm.gateway.core.credential.ApiKeyService;
+import com.zifang.z.llm.gateway.core.credential.persist.ApiKeyPersistence;
+import com.zifang.z.llm.gateway.core.credential.persist.JsonFileApiKeyPersistence;
+import com.zifang.z.llm.gateway.core.credential.persist.NoopApiKeyPersistence;
 import com.zifang.z.llm.gateway.core.properties.GatewayProperties;
 import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
+import com.zifang.z.llm.gateway.core.registry.LlmManagedRuntime;
 import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
 import com.zifang.z.llm.gateway.core.resilience.ProviderInvoker;
 import com.zifang.z.llm.gateway.core.router.ModelRouter;
@@ -57,7 +61,12 @@ public class ZLlmAutoConfiguration {
 
     @Bean("zLlmApiKeyService")
     public ApiKeyService apiKeyService(GatewayProperties properties) {
-        return new ApiKeyService(properties);
+        // 运行期 key 状态持久化: 配了 z.llm.api-key-store-path 才落文件, 否则默认内存态 (向后兼容).
+        ApiKeyPersistence storage = (properties.getApiKeyStorePath() == null
+                || properties.getApiKeyStorePath().isBlank())
+                ? new NoopApiKeyPersistence()
+                : new JsonFileApiKeyPersistence(properties.getApiKeyStorePath());
+        return new ApiKeyService(properties, storage);
     }
 
     @Bean("zLlmRateLimiter")
@@ -68,6 +77,12 @@ public class ZLlmAutoConfiguration {
     @Bean("zLlmModelRouter")
     public ModelRouter modelRouter(LlmProviderRegistry registry, GatewayProperties properties) {
         return new ModelRouter(registry, properties);
+    }
+
+    @Bean("zLlmManagedRuntime")
+    public LlmManagedRuntime llmManagedRuntime(LlmCredentialStore credentialStore,
+                                               LlmProviderRegistry providerRegistry) {
+        return new LlmManagedRuntime(credentialStore, providerRegistry);
     }
 
     @Bean("zLlmProviderInvoker")
@@ -83,8 +98,9 @@ public class ZLlmAutoConfiguration {
     }
 
     @Bean("zLlmAccessControl")
-    public AccessControl accessControl(GatewayProperties properties) {
-        return new AccessControl(properties);
+    public AccessControl accessControl(GatewayProperties properties, UsageLedger usageLedger) {
+        // 注入同一账本实例: 额度校验读的就是 record() 累计出的 cost, 二者必须同源.
+        return new AccessControl(properties, usageLedger);
     }
 
     @Bean("zLlmUpstreamHttp")

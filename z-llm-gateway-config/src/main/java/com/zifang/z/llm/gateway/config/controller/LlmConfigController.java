@@ -2,6 +2,7 @@ package com.zifang.z.llm.gateway.config.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zifang.util.core.meta.Result;
+import com.zifang.z.llm.gateway.config.auth.LlmConfigAccess;
 import com.zifang.z.llm.gateway.config.dto.LlmModelDto;
 import com.zifang.z.llm.gateway.config.dto.LlmProviderDto;
 import com.zifang.z.llm.gateway.config.dto.ToolTemplateDto;
@@ -46,6 +47,9 @@ public class LlmConfigController {
     @Resource
     private LlmConfigService llmConfigService;
 
+    @Resource
+    private LlmConfigAccess llmConfigAccess;
+
     // ==================== Provider ====================
 
     @Operation(summary = "查询所有 LLM 提供方")
@@ -63,6 +67,7 @@ public class LlmConfigController {
     @Operation(summary = "创建 LLM 提供方")
     @PostMapping("/provider/create")
     public Result<Object> createProvider(@RequestBody LlmProviderDto dto) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.saveProvider(dto);
         return Result.success();
     }
@@ -70,6 +75,7 @@ public class LlmConfigController {
     @Operation(summary = "更新 LLM 提供方")
     @PostMapping("/provider/update")
     public Result<Object> updateProvider(@RequestBody LlmProviderDto dto) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.saveProvider(dto);
         return Result.success();
     }
@@ -77,6 +83,7 @@ public class LlmConfigController {
     @Operation(summary = "删除 LLM 提供方")
     @PostMapping("/provider/delete")
     public Result<Object> deleteProvider(@RequestBody Long id) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.deleteProvider(id);
         return Result.success();
     }
@@ -108,6 +115,7 @@ public class LlmConfigController {
     @Operation(summary = "创建模型")
     @PostMapping("/model/create")
     public Result<Object> createModel(@RequestBody LlmModelDto dto) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.saveModel(dto);
         return Result.success();
     }
@@ -115,6 +123,7 @@ public class LlmConfigController {
     @Operation(summary = "更新模型")
     @PostMapping("/model/update")
     public Result<Object> updateModel(@RequestBody LlmModelDto dto) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.saveModel(dto);
         return Result.success();
     }
@@ -122,6 +131,7 @@ public class LlmConfigController {
     @Operation(summary = "删除模型")
     @PostMapping("/model/delete")
     public Result<Object> deleteModel(@RequestBody Long id) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.deleteModel(id);
         return Result.success();
     }
@@ -143,6 +153,7 @@ public class LlmConfigController {
     @Operation(summary = "创建工具模板")
     @PostMapping("/tool-template/create")
     public Result<Object> createToolTemplate(@RequestBody ToolTemplateDto dto) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.saveToolTemplate(dto);
         return Result.success();
     }
@@ -150,6 +161,7 @@ public class LlmConfigController {
     @Operation(summary = "更新工具模板")
     @PostMapping("/tool-template/update")
     public Result<Object> updateToolTemplate(@RequestBody ToolTemplateDto dto) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.saveToolTemplate(dto);
         return Result.success();
     }
@@ -157,6 +169,7 @@ public class LlmConfigController {
     @Operation(summary = "删除工具模板")
     @PostMapping("/tool-template/delete")
     public Result<Object> deleteToolTemplate(@RequestBody Long id) {
+        llmConfigAccess.assertWriteOperator();
         llmConfigService.deleteToolTemplate(id);
         return Result.success();
     }
