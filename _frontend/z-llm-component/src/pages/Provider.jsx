@@ -1,7 +1,7 @@
 /** LLM 供应商管理：/llm-center/provider CRUD。 */
 import {useEffect, useState} from 'react'
 import {Button, Form, Input, message, Modal, Popconfirm, Select, Space, Tag} from 'antd'
-import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined} from '@ant-design/icons'
+import {PlusOutlined, ReloadOutlined} from '@ant-design/icons';
 import {ErrorState, ListTable} from '@yuku123/z-frontend-common/ui'
 import {llmApi} from '../services/api'
 
@@ -63,9 +63,9 @@ export default function Provider() {
         {title: '操作', key: 'op', width: 160,
             render: (_, r) => (
                 <Space size="small">
-                    <Button size="small" icon={<EditOutlined/>} onClick={() => openEdit(r)}>编辑</Button>
+                    <Button type="link" size="small" onClick={() => openEdit(r)}>编辑</Button>
                     <Popconfirm title={`删除供应商 ${r.providerName}？`} onConfirm={() => onDelete(r)} okText="删除" cancelText="取消" okButtonProps={{danger: true}}>
-                        <Button size="small" danger icon={<DeleteOutlined/>}>删除</Button>
+                        <Button type="link" size="small" danger>删除</Button>
                     </Popconfirm>
                 </Space>
             )},
