@@ -19,7 +19,7 @@
     <parent>
         <groupId>io.github.yuku123</groupId>
         <artifactId>z-boot-parent</artifactId>
-        <version>1.2.4</version>
+        <version>1.2.6</version>
         <relativePath/>
     </parent>
 
@@ -101,8 +101,16 @@
              spring-cloud.version 留着：本仓 2021.0.8 vs 地板 2.2.6.RELEASE 是**不同值**
              （README 硬规则 2：与地板不同值的格不能删）。这一格现在全仓 0 个 <version> 读者
              （现 grep 本仓 5 个 pom，`${spring-cloud.version}` 命中 0 处），留着是口径登记位，
-             删掉就等于"本仓不再表态"，而地板那 2.2.6.RELEASE 会补位——不是这一轮要做的事。 -->
-        <spring-cloud.version>2021.0.8</spring-cloud.version>
+             删掉就等于"本仓不再表态"，而地板那 2.2.6.RELEASE 会补位——不是这一轮要做的事。
+
+             ⚠ 2026-11-18 第二轮修订：上面写的 2021.0.8 是 **Spring Cloud 2021.x**（配 Boot 2.6/2.7），
+             与本仓的 Boot 3 线**差了两代**，且与 parent 的 2023.0.3 也不一致
+             ⇒ 三个版本号（仓里 2021.0.8 / parent 2023.0.3 / 正确线 2025.0.x）互相打架。
+             本轮把 parent 抬到 **2025.0.3**（官方矩阵：2025.0.x ⇒ Boot 3.5.x），
+             本仓这格登记位也跟着改成 2025.0.3 —— 它是"口径登记位"，
+             不改就等于让本仓继续对外表态一个 Boot 2 时代的版本线。
+             （仍无 <version> 读者；真引入 spring-cloud 的只有 parent 的两条 DM 声明。） -->
+        <spring-cloud.version>2025.0.3</spring-cloud.version>
 
         <!-- z 系列生态 -->
         <!-- 三格逐格现量（preflight 第 2/3 节 + 现读 fleet pom）：
