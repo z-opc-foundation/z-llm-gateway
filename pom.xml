@@ -19,7 +19,7 @@
     <parent>
         <groupId>io.github.yuku123</groupId>
         <artifactId>z-boot-parent</artifactId>
-        <version>1.2.3</version>
+        <version>1.2.4</version>
         <relativePath/>
     </parent>
 
@@ -368,9 +368,9 @@
             <!-- 发布形状（README 第 7 步判据）：这一条**迁移前就在**、且是常开（不挂 central profile），
                  所以换 <parent> 对本仓的发布形状没有任何影响——现测 repo1 上 z-llm 0.1.6 的 5 份 pom
                  `<parent>` 计数全为 0（自包含），迁移后本仓 5 份 .flattened-pom.xml 仍是 0。
-                 z-boot-parent:1.0.19 那条 flatten 声明是 `<inherited>false</inherited>`
+                 z-boot-parent:1.2.4 那条 flatten 声明是 `<inherited>false</inherited>`
                  （z-boot-parent/pom.xml:257-261，它自己要用 resolveCiFriendliesOnly），**不下发** flatten
-                 ⇒ 没有本仓这一条，加了 parent 之后发出去的每支 pom 都会带着 z-boot-parent:1.0.19
+                 ⇒ 没有本仓这一条，加了 parent 之后发出去的每支 pom 都会带着 z-boot-parent:1.2.4
                  （z-cache / z-rpc 两轮都是当场踩到这条才补的声明）。
                  版本仍写 ${flatten-maven-plugin.version}：该属性现在从父链继承（z-boot-parent/pom.xml:70
                  = 1.7.3，与本仓迁移前那一格逐字节相同），本仓那份同名属性已删 ⇒ 实际执行的还是 1.7.3

@@ -11,7 +11,7 @@ failover 与冷却、RPM/TPM/并发三口径限流，以及按 token 记账。�
 由 `z-agent-kernel-llm` 的 provider 承担，本仓只做编排。
 
 **Maven 坐标：** `io.github.yuku123:z-llm-gateway:${revision}`（当前 `0.1.8`，根 POM `packaging=pom`），
-父项目 `io.github.yuku123:z-boot-parent:1.1.0`（`<relativePath/>` 留空）。
+父项目 `io.github.yuku123:z-boot-parent:1.2.4`（`<relativePath/>` 留空）。
 
 **技术栈：** Java 8 + Spring Boot 2.7.18 + `javax.servlet` + Maven 多模块（5 个 reactor 模块）；
 配置面用 MyBatis-Plus（`z-llm-gateway-config` 一支）。
@@ -20,7 +20,7 @@ failover 与冷却、RPM/TPM/并发三口径限流，以及按 token 记账。�
 
 ```
 z-llm-gateway/
-├── pom.xml                          # 聚合 POM：父 z-boot-parent:1.1.0，5 个 reactor 模块
+├── pom.xml                          # 聚合 POM：父 z-boot-parent:1.2.4，5 个 reactor 模块
 ├── z-llm-gateway-api/               # 契约层（17 文件 / 1423 行）：统一请求/响应模型 + 凭据模型
 │                                   #   api/dto（UnifiedRequest / UnifiedResponse / UnifiedMessage /
 │                                   #    UnifiedStreamChunk / ToolCall / ToolSpec / ContentPart / Choice /
