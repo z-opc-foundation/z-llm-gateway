@@ -1,5 +1,6 @@
 package com.zifang.z.llm.gateway.admin.controller;
 
+import com.zifang.z.meta.api.annotation.BizApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminUiController {
 
     @GetMapping({"", "/", "/index"})
+    @BizApi(summary = "index", description = "", tags = { "z-llm-gateway" })
     public String index(Model model) {
         model.addAttribute("title", "z-llm 控制台");
         return "z-llm-admin/index";
     }
 }
+

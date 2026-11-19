@@ -5,6 +5,7 @@ import com.zifang.z.llm.gateway.core.credential.ApiKeyService;
 import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
 import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
 import com.zifang.z.llm.gateway.core.service.RateLimiter;
+import com.zifang.z.meta.api.annotation.BizMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class AdminQueryService {
     }
 
     /** 概览. */
+    @BizMethod(name = "概览", module = "z-llm-gateway", description = "概览.", operation = BizMethod.Operation.ACTION)
     public Map<String, Object> overview() {
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("vendors", providers());
@@ -48,6 +50,7 @@ public class AdminQueryService {
     }
 
     /** 各 vendor 状态. */
+    @BizMethod(name = "各 vendor 状态", module = "z-llm-gateway", description = "各 vendor 状态.", operation = BizMethod.Operation.ACTION)
     public List<Map<String, Object>> providers() {
         List<Map<String, Object>> out = new ArrayList<>();
         for (Vendor v : Vendor.values()) {
@@ -62,6 +65,7 @@ public class AdminQueryService {
     }
 
     /** 列模型 (按 vendor). */
+    @BizMethod(name = "列模型 (按 vendor)", module = "z-llm-gateway", description = "列模型 (按 vendor).", operation = BizMethod.Operation.ACTION)
     public List<String> models(Vendor vendor) {
         List<String> all = new ArrayList<>();
         providerRegistry.listByVendor(vendor).forEach(p -> {
@@ -74,3 +78,4 @@ public class AdminQueryService {
         return all;
     }
 }
+

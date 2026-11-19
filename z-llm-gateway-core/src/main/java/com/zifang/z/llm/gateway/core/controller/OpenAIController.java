@@ -17,6 +17,11 @@ import com.zifang.z.llm.gateway.core.router.ModelRouter;
 import com.zifang.z.llm.gateway.core.service.ChatGatewayService;
 import com.zifang.z.llm.gateway.core.service.EmbeddingService;
 import com.zifang.z.llm.gateway.core.service.RateLimiter;
+import com.zifang.z.meta.api.annotation.BizApi;
+import com.zifang.z.meta.api.annotation.BizField;
+import com.zifang.z.meta.api.annotation.BizParam;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -29,8 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriUtils;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -81,7 +84,8 @@ public class OpenAIController {
      * 为兼容既有调用方, {@code ?stream=true} 仍然有效.
      */
     @PostMapping(value = "/chat/completions", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void chatCompletions(@RequestBody String body,
+    @BizApi(summary = "chat/completions 统一入口", description = "chat/completions 统一入口. 流式与否由 请求体 里的 stream 决定, 而不是 URL 参数 —— OpenAI 官方 SDK 只会把 stream 放进 JSON body, 此前按 params=\"stream=true\" 分派的写法对真实客户端永远不生效, 只会退回一个缓冲好的 JSON. 为兼容既有调用方, ?stream=true 仍然有效.", tags = { "z-llm-gateway" })
+    public void chatCompletions(@RequestBody @BizParam(name = "body", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.BODY) String body,
                                HttpServletRequest req,
                                HttpServletResponse resp) throws IOException {
         ApiKey key = AuthorizationExtractor.requireApiKey(req, apiKeyService);
@@ -157,7 +161,8 @@ public class OpenAIController {
      */
     @PostMapping(value = "/embeddings", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public void embeddings(@RequestBody EmbeddingsRequest body,
+    @BizApi(summary = "POST /v1/embeddings — 向量化", description = "POST /v1/embeddings — 向量化. kernel 的 LlmProvider 没有 embedding 方法, 这条路由网关按各家真实端点直连上游, 凭据选择/冷却/failover 仍与 chat 主链路共用 ProviderInvoker。", tags = { "z-llm-gateway" })
+    public void embeddings(@RequestBody @BizParam(name = "body", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.BODY) EmbeddingsRequest body,
                            HttpServletRequest req,
                            HttpServletResponse resp) throws IOException {
         ApiKey key = AuthorizationExtractor.requireApiKey(req, apiKeyService);
@@ -176,6 +181,7 @@ public class OpenAIController {
     }
 
     @GetMapping(value = "/models", produces = MediaType.APPLICATION_JSON_VALUE)
+    @BizApi(summary = "models", description = "", tags = { "z-llm-gateway" })
     public ResponseEntity<Map<String, Object>> models() {
         Map<String, Object> root = new LinkedHashMap<>();
         root.put("object", "list");
@@ -214,6 +220,7 @@ public class OpenAIController {
      * (网关侧还有 "openai/gpt-4o" 这种命名空间写法), 单个路径变量匹配不到多段.
      */
     @GetMapping(value = "/models/**", produces = MediaType.APPLICATION_JSON_VALUE)
+    @BizApi(summary = "单个模型查询", description = "单个模型查询. 用 /models/ 而不是 {id} 路径变量: OpenAI 的模型 id 本身就带斜杠 (网关侧还有 \"openai/gpt-4o\" 这种命名空间写法), 单个路径变量匹配不到多段.", tags = { "z-llm-gateway" })
     public ResponseEntity<Map<String, Object>> model(HttpServletRequest req) {
         String id = pathAfterModels(req);
         Map<String, ModelRouter.ModelCard> cards = modelRouter.availableModels();
@@ -296,3 +303,6 @@ public class OpenAIController {
         }
     }
 }
+
+
+

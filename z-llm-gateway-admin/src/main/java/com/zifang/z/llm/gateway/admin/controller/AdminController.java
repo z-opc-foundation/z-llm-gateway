@@ -9,6 +9,9 @@ import com.zifang.z.llm.gateway.core.registry.LlmCredentialStore;
 import com.zifang.z.llm.gateway.core.registry.LlmProviderRegistry;
 import com.zifang.z.llm.gateway.core.service.RateLimiter;
 import com.zifang.z.llm.gateway.core.usage.UsageLedger;
+import com.zifang.z.meta.api.annotation.BizApi;
+import com.zifang.z.meta.api.annotation.BizField;
+import com.zifang.z.meta.api.annotation.BizParam;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,17 +60,20 @@ public class AdminController {
     }
 
     @GetMapping("/overview")
+    @BizApi(summary = "overview", description = "", tags = { "z-llm-gateway" })
     public Map<String, Object> overview() {
         return query.overview();
     }
 
     @GetMapping("/vendors")
+    @BizApi(summary = "vendors", description = "", tags = { "z-llm-gateway" })
     public List<Map<String, Object>> vendors() {
         return query.providers();
     }
 
     @GetMapping("/vendors/{vendor}/models")
-    public Map<String, Object> models(@PathVariable String vendor) {
+    @BizApi(summary = "models", description = "", tags = { "z-llm-gateway" })
+    public Map<String, Object> models(@PathVariable @BizParam(name = "vendor", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.PATH) String vendor) {
         Vendor v = Vendor.fromModel(vendor + "/x");
         Map<String, Object> out = new HashMap<>();
         out.put("vendor", vendor);
@@ -76,6 +82,7 @@ public class AdminController {
     }
 
     @GetMapping("/credentials")
+    @BizApi(summary = "credentials", description = "", tags = { "z-llm-gateway" })
     public Map<String, Object> credentials() {
         Map<String, Object> out = new HashMap<>();
         out.put("total", credentialStore.size());
@@ -90,8 +97,10 @@ public class AdminController {
      * 不带鉴权的端点变成一张"可拿来调网关的全部凭证"清单.
      */
     @GetMapping("/api-keys")
+    @BizApi(summary = "API Key 清单 — 只给掩码, 不给原文", description = "API Key 清单 — 只给掩码, 不给原文. ApiKey#getKey() 就是鉴权用的凭证本身; 直接序列化 DTO 会让这个 不带鉴权的端点变成一张\"可拿来调网关的全部凭证\"清单.", tags = { "z-llm-gateway" })
     public List<Map<String, Object>> apiKeys(
-            @org.springframework.web.bind.annotation.RequestParam(value = "tenant", required = false) String tenant) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "tenant", required = false)
+            @BizParam(name = "tenant", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.QUERY) String tenant) {
         List<Map<String, Object>> out = new ArrayList<>();
         for (ApiKey k : apiKeyService.list()) {
             if (tenant != null && !tenant.isEmpty()
@@ -119,7 +128,8 @@ public class AdminController {
      * 已配 admin-token 时本端点受控制面鉴权保护.
      */
     @PostMapping("/api-keys")
-    public Map<String, Object> issueKey(@RequestBody Map<String, Object> body) {
+    @BizApi(summary = "签发一把新 API Key (控制面的对外交付口)", description = "签发一把新 API Key (控制面的对外交付口). body 支持: name, ownerId, quota, allowedModels(数组), allowedVendors(数组), tokensPerMinute, requestsPerMinute, expiresInDays(从当前起算, 可选). 完整 key (sk-zopc-*) 只在本次响应返回一次, 之后所有视图一律脱敏. 已配 admin-token 时本端点受控制面鉴权保护.", tags = { "z-llm-gateway" })
+    public Map<String, Object> issueKey(@RequestBody @BizParam(name = "body", type = BizField.FieldType.JSON, description = "", position = BizParam.Position.BODY) Map<String, Object> body) {
         ApiKey tpl = new ApiKey();
         tpl.setName(str(body.get("name")));
         tpl.setOwnerId(str(body.get("ownerId")));
@@ -152,7 +162,8 @@ public class AdminController {
 
     /** 调额/充值: body 传 {@code quota}(绝对值, 可 null=不限) 或 {@code delta}(增量). */
     @PostMapping("/api-keys/{id}/quota")
-    public Map<String, Object> updateQuota(@PathVariable String id, @RequestBody Map<String, Object> body) {
+    @BizApi(summary = "调额/充值: body 传 quota(绝对值, 可 null=不限) 或 delta(增量)", description = "调额/充值: body 传 quota(绝对值, 可 null=不限) 或 delta(增量).", tags = { "z-llm-gateway" })
+    public Map<String, Object> updateQuota(@PathVariable @BizParam(name = "id", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.PATH) String id, @RequestBody @BizParam(name = "body", type = BizField.FieldType.JSON, description = "", position = BizParam.Position.BODY) Map<String, Object> body) {
         ApiKey k;
         if (body != null && body.containsKey("quota")) {
             k = apiKeyService.setQuota(id, toDouble(body.get("quota")));
@@ -167,7 +178,8 @@ public class AdminController {
 
     /** 停用某 key: 立即从生效表移除, 之后鉴权失败. */
     @PostMapping("/api-keys/{id}/disable")
-    public Map<String, Object> disableKey(@PathVariable String id) {
+    @BizApi(summary = "停用某 key: 立即从生效表移除, 之后鉴权失败", description = "停用某 key: 立即从生效表移除, 之后鉴权失败.", tags = { "z-llm-gateway" })
+    public Map<String, Object> disableKey(@PathVariable @BizParam(name = "id", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.PATH) String id) {
         if (!apiKeyService.disable(id)) {
             throw new GatewayException(404, "api_key_not_found", "API key not found: " + id);
         }
@@ -268,6 +280,7 @@ public class AdminController {
     }
 
     @GetMapping("/rate-limit")
+    @BizApi(summary = "rateLimit", description = "", tags = { "z-llm-gateway" })
     public Object rateLimit() {
         return rateLimiter.snapshot();
     }
@@ -280,8 +293,10 @@ public class AdminController {
      * 走 /z-llm/admin/* 且由 {@code z.llm.expose-admin=true} 门控, 与公网 /v1 隔离.
      */
     @GetMapping("/usage")
+    @BizApi(summary = "用量与花费台账 (按 ApiKey / 按 ApiKey+model 两级)", description = "用量与花费台账 (按 ApiKey / 按 ApiKey+model 两级). 原先 UsageLedger#snapshot() 有实现但没有任何 controller 调用点 ⇒ 记账口是摆设; 补上这个控制面端点后, 运维/调用方都能按 key 精确对账烧了多少钱. 走 /z-llm/admin/* 且由 z.llm.expose-admin=true 门控, 与公网 /v1 隔离.", tags = { "z-llm-gateway" })
     public Map<String, Object> usage(
-            @org.springframework.web.bind.annotation.RequestParam(value = "tenant", required = false) String tenant) {
+            @org.springframework.web.bind.annotation.RequestParam(value = "tenant", required = false)
+            @BizParam(name = "tenant", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.QUERY) String tenant) {
         if (tenant != null && !tenant.isEmpty()) {
             Map<String, Object> out = new LinkedHashMap<>();
             out.put("tenant", usageLedger.snapshotByTenant(tenant));
@@ -297,6 +312,7 @@ public class AdminController {
     }
 
     @GetMapping("/health")
+    @BizApi(summary = "health", description = "", tags = { "z-llm-gateway" })
     public Map<String, Object> health() {
         Map<String, Object> out = new HashMap<>();
         out.put("status", "UP");
@@ -305,3 +321,4 @@ public class AdminController {
         return out;
     }
 }
+

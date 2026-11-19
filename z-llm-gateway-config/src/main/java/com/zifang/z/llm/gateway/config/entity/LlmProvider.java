@@ -3,23 +3,37 @@ package com.zifang.z.llm.gateway.config.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zifang.z.meta.api.annotation.BizField;
+import com.zifang.z.meta.api.annotation.BizModel;
 
 import java.time.LocalDateTime;
 
+@BizModel(name = "z_llm_provider", module = "z-llm-gateway", description = "z_llm_provider")
 @TableName("z_llm_provider")
 public class LlmProvider {
 
     @TableId(type = IdType.AUTO)
+    @BizField(name = "id", type = BizField.FieldType.INTEGER)
     private Long id;
+    @BizField(name = "providerCode", type = BizField.FieldType.STRING)
     private String providerCode;
+    @BizField(name = "providerName", type = BizField.FieldType.STRING)
     private String providerName;
+    @BizField(name = "baseUrl", type = BizField.FieldType.STRING)
     private String baseUrl;
+    @BizField(name = "apiKey", type = BizField.FieldType.STRING)
     private String apiKey;
+    @BizField(name = "enabled", type = BizField.FieldType.INTEGER)
     private Integer enabled;
+    @BizField(name = "priority", type = BizField.FieldType.INTEGER)
     private Integer priority;
+    @BizField(name = "providerType", type = BizField.FieldType.STRING)
     private String providerType;
+    @BizField(name = "extConfig", type = BizField.FieldType.STRING)
     private String extConfig;
+    @BizField(name = "gmtCreate", type = BizField.FieldType.DATETIME)
     private LocalDateTime gmtCreate;
+    @BizField(name = "gmtModified", type = BizField.FieldType.DATETIME)
     private LocalDateTime gmtModified;
 
     public Long getId() {
@@ -110,3 +124,4 @@ public class LlmProvider {
         this.gmtModified = gmtModified;
     }
 }
+

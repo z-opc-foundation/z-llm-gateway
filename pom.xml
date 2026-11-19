@@ -79,6 +79,7 @@
     </modules>
 
     <properties>
+        <z-meta.version>1.0.2</z-meta.version>
         <!-- 项目自身版本 -->
         <!-- 版本单一真源：抬号只改这一行（配下面常开的 oss flatten，入库/发布件里落成字面量）。
              自家 5 个 reactor 坐标在 <dependencyManagement> 里钉的就是 ${revision}。
@@ -251,6 +252,11 @@
                 <groupId>io.github.yuku123</groupId>
                 <artifactId>z-util-dsl-kernel</artifactId>
                 <version>1.2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.yuku123</groupId>
+                <artifactId>z-meta-api</artifactId>
+                <version>${z-meta.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

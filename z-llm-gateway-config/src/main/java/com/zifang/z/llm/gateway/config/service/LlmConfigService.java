@@ -2,17 +2,18 @@ package com.zifang.z.llm.gateway.config.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zifang.z.llm.gateway.api.dto.LlmCredential;
 import com.zifang.z.llm.gateway.config.dto.LlmModelDto;
 import com.zifang.z.llm.gateway.config.dto.LlmProviderDto;
 import com.zifang.z.llm.gateway.config.dto.ToolTemplateDto;
 import com.zifang.z.llm.gateway.config.entity.AgentToolTemplate;
 import com.zifang.z.llm.gateway.config.entity.LlmModel;
 import com.zifang.z.llm.gateway.config.entity.LlmProvider;
-import com.zifang.z.llm.gateway.api.dto.LlmCredential;
 import com.zifang.z.llm.gateway.config.mapper.AgentToolTemplateMapper;
 import com.zifang.z.llm.gateway.config.mapper.LlmModelMapper;
 import com.zifang.z.llm.gateway.config.mapper.LlmProviderMapper;
 import com.zifang.z.llm.gateway.core.registry.LlmManagedRuntime;
+import com.zifang.z.meta.api.annotation.BizMethod;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class LlmConfigService {
 
     // ==================== Provider ====================
 
+    @BizMethod(name = "listProviders", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public List<LlmProviderDto> listProviders() {
         LambdaQueryWrapper<LlmProvider> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByAsc(LlmProvider::getPriority);
@@ -48,6 +50,7 @@ public class LlmConfigService {
                 .collect(Collectors.toList());
     }
 
+    @BizMethod(name = "getProvider", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public LlmProviderDto getProvider(String providerCode) {
         LambdaQueryWrapper<LlmProvider> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LlmProvider::getProviderCode, providerCode);
@@ -55,6 +58,7 @@ public class LlmConfigService {
         return p != null ? toProviderDto(p) : null;
     }
 
+    @BizMethod(name = "saveProvider", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.CREATE)
     public void saveProvider(LlmProviderDto dto) {
         LlmProvider p = new LlmProvider();
         BeanUtils.copyProperties(dto, p);
@@ -66,6 +70,7 @@ public class LlmConfigService {
         pushManagedToRuntime();
     }
 
+    @BizMethod(name = "deleteProvider", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.DELETE)
     public void deleteProvider(Long id) {
         providerMapper.deleteById(id);
         pushManagedToRuntime();
@@ -73,6 +78,7 @@ public class LlmConfigService {
 
     // ==================== Model ====================
 
+    @BizMethod(name = "listModels", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public List<LlmModelDto> listModels(String providerCode) {
         LambdaQueryWrapper<LlmModel> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LlmModel::getEnabled, 1);
@@ -85,6 +91,7 @@ public class LlmConfigService {
                 .collect(Collectors.toList());
     }
 
+    @BizMethod(name = "listModelsByProvider", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public List<LlmModelDto> listModelsByProvider(String providerCode) {
         LambdaQueryWrapper<LlmModel> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LlmModel::getEnabled, 1);
@@ -94,6 +101,7 @@ public class LlmConfigService {
                 .collect(Collectors.toList());
     }
 
+    @BizMethod(name = "pageModels", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public Page<LlmModelDto> pageModels(String providerCode, String keyword, int pageNum, int pageSize) {
         Page<LlmModel> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<LlmModel> wrapper = new LambdaQueryWrapper<>();
@@ -111,6 +119,7 @@ public class LlmConfigService {
         return dtoPage;
     }
 
+    @BizMethod(name = "getModel", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public LlmModelDto getModel(String modelCode) {
         LambdaQueryWrapper<LlmModel> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LlmModel::getModelCode, modelCode);
@@ -118,6 +127,7 @@ public class LlmConfigService {
         return m != null ? toModelDto(m) : null;
     }
 
+    @BizMethod(name = "saveModel", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.CREATE)
     public void saveModel(LlmModelDto dto) {
         LlmModel m = new LlmModel();
         BeanUtils.copyProperties(dto, m);
@@ -129,6 +139,7 @@ public class LlmConfigService {
         pushManagedToRuntime();
     }
 
+    @BizMethod(name = "deleteModel", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.DELETE)
     public void deleteModel(Long id) {
         modelMapper.deleteById(id);
         pushManagedToRuntime();
@@ -136,6 +147,7 @@ public class LlmConfigService {
 
     // ==================== Tool Template ====================
 
+    @BizMethod(name = "listToolTemplates", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public List<ToolTemplateDto> listToolTemplates() {
         LambdaQueryWrapper<AgentToolTemplate> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AgentToolTemplate::getEnabled, 1);
@@ -144,6 +156,7 @@ public class LlmConfigService {
                 .collect(Collectors.toList());
     }
 
+    @BizMethod(name = "getToolTemplate", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.QUERY)
     public ToolTemplateDto getToolTemplate(String toolCode) {
         LambdaQueryWrapper<AgentToolTemplate> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AgentToolTemplate::getToolCode, toolCode);
@@ -151,6 +164,7 @@ public class LlmConfigService {
         return t != null ? toToolTemplateDto(t) : null;
     }
 
+    @BizMethod(name = "saveToolTemplate", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.CREATE)
     public void saveToolTemplate(ToolTemplateDto dto) {
         AgentToolTemplate t = new AgentToolTemplate();
         BeanUtils.copyProperties(dto, t);
@@ -161,6 +175,7 @@ public class LlmConfigService {
         }
     }
 
+    @BizMethod(name = "deleteToolTemplate", module = "z-llm-gateway", description = "", operation = BizMethod.Operation.DELETE)
     public void deleteToolTemplate(Long id) {
         toolTemplateMapper.deleteById(id);
     }
@@ -173,6 +188,7 @@ public class LlmConfigService {
      * <p>无运行时 (纯配置面板) 时为 no-op. 有运行时则覆盖式下发: 受管凭据按 alias
      * 合并进凭据池并重建 provider 注册表, 使前端新增/修改的模型立即可被 ModelRouter 路由.
      */
+    @BizMethod(name = "把 DB 里启用的供应商/模型全量映射成受管凭据, 推给网关运行时", module = "z-llm-gateway", description = "把 DB 里启用的供应商/模型全量映射成受管凭据, 推给网关运行时. 无运行时 (纯配置面板) 时为 no-op. 有运行时则覆盖式下发: 受管凭据按 alias 合并进凭据池并重建 provider 注册表, 使前端新增/修改的模型立即可被 ModelRouter 路由.", operation = BizMethod.Operation.ACTION)
     public void pushManagedToRuntime() {
         if (managedRuntime == null) {
             return;
@@ -184,6 +200,7 @@ public class LlmConfigService {
     }
 
     /** 供控制器/运维手动触发一次 DB→运行时同步. */
+    @BizMethod(name = "供控制器/运维手动触发一次 DB→运行时同步", module = "z-llm-gateway", description = "供控制器/运维手动触发一次 DB→运行时同步.", operation = BizMethod.Operation.ACTION)
     public void syncRuntime() {
         pushManagedToRuntime();
     }
@@ -208,3 +225,4 @@ public class LlmConfigService {
         return dto;
     }
 }
+

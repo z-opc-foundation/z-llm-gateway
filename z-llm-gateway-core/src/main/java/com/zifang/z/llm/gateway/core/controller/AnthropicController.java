@@ -14,6 +14,11 @@ import com.zifang.z.llm.gateway.core.credential.AuthorizationExtractor;
 import com.zifang.z.llm.gateway.core.mapper.AnthropicRequestMapper;
 import com.zifang.z.llm.gateway.core.service.ChatGatewayService;
 import com.zifang.z.llm.gateway.core.service.RateLimiter;
+import com.zifang.z.meta.api.annotation.BizApi;
+import com.zifang.z.meta.api.annotation.BizField;
+import com.zifang.z.meta.api.annotation.BizParam;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -25,8 +30,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -64,8 +67,10 @@ public class AnthropicController {
     }
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void messages(@RequestBody String body,
-                         @RequestHeader(value = "anthropic-version", required = false) String apiVersion,
+    @BizApi(summary = "messages", description = "", tags = { "z-llm-gateway" })
+    public void messages(@RequestBody @BizParam(name = "body", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.BODY) String body,
+                         @RequestHeader(value = "anthropic-version", required = false)
+                         @BizParam(name = "anthropic-version", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.HEADER) String apiVersion,
                          HttpServletRequest req,
                          HttpServletResponse resp) throws IOException {
         ApiKey key = AuthorizationExtractor.requireApiKey(req, apiKeyService);
@@ -95,7 +100,8 @@ public class AnthropicController {
      * 也不要让只依赖"端点存在"的客户端拿不到任何预算信号.
      */
     @PostMapping(value = "/messages/count_tokens", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> countTokens(@RequestBody String body) {
+    @BizApi(summary = "token 计数 (估算)", description = "token 计数 (估算). 网关这层没有各 vendor 的 tokenizer, 因此按 \"约 4 字符 = 1 token\" 估算, 并在响应里以 estimate=true 明示 —— 宁可给出带标记的近似值, 也不要让只依赖\"端点存在\"的客户端拿不到任何预算信号.", tags = { "z-llm-gateway" })
+    public ResponseEntity<Map<String, Object>> countTokens(@RequestBody @BizParam(name = "body", type = BizField.FieldType.STRING, description = "", position = BizParam.Position.BODY) String body) {
         JsonCursor root0 = parseBody(body);
         UnifiedRequest unified = normalize(mapper.parse(root0));
         long chars = textLen(unified.getMessages());
@@ -392,3 +398,6 @@ public class AnthropicController {
         }
     }
 }
+
+
+

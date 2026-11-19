@@ -3,29 +3,49 @@ package com.zifang.z.llm.gateway.config.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zifang.z.meta.api.annotation.BizField;
+import com.zifang.z.meta.api.annotation.BizModel;
 
 import java.time.LocalDateTime;
 
+@BizModel(name = "z_llm_model", module = "z-llm-gateway", description = "z_llm_model")
 @TableName("z_llm_model")
 public class LlmModel {
 
     @TableId(type = IdType.AUTO)
+    @BizField(name = "id", type = BizField.FieldType.INTEGER)
     private Long id;
+    @BizField(name = "modelCode", type = BizField.FieldType.STRING)
     private String modelCode;
+    @BizField(name = "modelName", type = BizField.FieldType.STRING)
     private String modelName;
+    @BizField(name = "providerCode", type = BizField.FieldType.STRING)
     private String providerCode;
+    @BizField(name = "modelType", type = BizField.FieldType.STRING)
     private String modelType;
+    @BizField(name = "contextWindow", type = BizField.FieldType.INTEGER)
     private Integer contextWindow;
+    @BizField(name = "supportsFunctionCall", type = BizField.FieldType.INTEGER)
     private Integer supportsFunctionCall;
+    @BizField(name = "supportsVision", type = BizField.FieldType.INTEGER)
     private Integer supportsVision;
+    @BizField(name = "maxOutputTokens", type = BizField.FieldType.INTEGER)
     private Integer maxOutputTokens;
+    @BizField(name = "inputPrice", type = BizField.FieldType.DECIMAL)
     private Double inputPrice;
+    @BizField(name = "outputPrice", type = BizField.FieldType.DECIMAL)
     private Double outputPrice;
+    @BizField(name = "enabled", type = BizField.FieldType.INTEGER)
     private Integer enabled;
+    @BizField(name = "description", type = BizField.FieldType.STRING)
     private String description;
+    @BizField(name = "defaultParams", type = BizField.FieldType.STRING)
     private String defaultParams;
+    @BizField(name = "extConfig", type = BizField.FieldType.STRING)
     private String extConfig;
+    @BizField(name = "gmtCreate", type = BizField.FieldType.DATETIME)
     private LocalDateTime gmtCreate;
+    @BizField(name = "gmtModified", type = BizField.FieldType.DATETIME)
     private LocalDateTime gmtModified;
 
     public Long getId() {
@@ -164,3 +184,4 @@ public class LlmModel {
         this.gmtModified = gmtModified;
     }
 }
+
